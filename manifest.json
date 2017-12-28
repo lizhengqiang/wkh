@@ -1,12 +1,12 @@
 {
     "manifest_version": 2,
-    "name": "玩客猴助手",
+    "name": "wkh",
     "description": "little monkey",
     "version": "0.1",
     "browser_action": {
         "default_icon": {
-            "19": "mine.svg",
-            "38": "mine.svg"
+            "19": "favicon.ico",
+            "38": "favicon.ico"
         },
         "default_title": "玩客猴助手",
         "default_popup": "popup.html"
