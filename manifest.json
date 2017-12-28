@@ -14,6 +14,7 @@
     "permissions": [
         "*://h.miguan.in/*",
         "*://api.h.miguan.in/*",
+        "http://localhost:65399/feedmonkeys",
         "tabs",
         "activeTab",
         "webRequest",
@@ -37,6 +38,7 @@
     ],
     "background": {
         "scripts": [
+            "zepto.min.js",
             "background.js"
         ],
         "persistent": true
