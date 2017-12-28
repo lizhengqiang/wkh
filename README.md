@@ -1,1 +1,1 @@
-(./install.jpg | width=100) ![]
+![image](install.jpg)
