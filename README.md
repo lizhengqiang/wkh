@@ -3,7 +3,7 @@
 
 # STEP 2 打开链课钱包
 
-# STEP 3
+# STEP 3 (Mac Only)Windows请耐心等待修复IPC问题
 https://github.com/lizhengqiang/auto
 > 下载此项目中的 feed-mac.bin 文件
 
