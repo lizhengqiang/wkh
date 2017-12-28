@@ -13,7 +13,8 @@ chrome.extension.onRequest.addListener(
                     "from_address": result.from_address,
                     "to_address": result.to_address,
                     "pwd": result.password,
-                    "monkey_ids": [{ id: request.id, max: request.max }]
+                    "monkeys": [{ id: request.id, limit: request.limit, mode: request.mode }]
+
                 }),
                 contentType: 'application/json',
                 success: function (data) {

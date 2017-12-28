@@ -8,26 +8,50 @@ chrome.extension.onRequest.addListener(
                     $(element).find(".panel").forEach(monkey => {
                         console.log(monkey)
                         var percent = $(monkey).find(".info").first().find(".percent").first().text()
-                        var btn = $('<button>一键喂养</button>')
+                        var btn = $('<button>最大次数喂养</button>')
                         btn.click(function () {
                             var self = $(this);
+                            self.hide()
                             chrome.extension.sendRequest({
                                 id: $(monkey).find(".id").first().text().split(' ')[1],
-                                max: (percent.split('/')[1] - percent.split('/')[0]).toFixed(2)
+                                limit: (percent.split('/')[1] - percent.split('/')[0]).toFixed(2),
+                                mode: "min",
                             }, function (response) {
                                 console.log(response);
-                                self.hide()
+
                             });
                         })
-                        $(monkey).append(
-                            btn
-                        )
+                        var btn2 = $('<button>最少次数喂养</button>')
+                        btn2.click(function () {
+                            var self = $(this);
+                            self.hide()
+                            chrome.extension.sendRequest({
+                                id: $(monkey).find(".id").first().text().split(' ')[1],
+                                limit: (percent.split('/')[1] - percent.split('/')[0]).toFixed(2),
+                                mode: "max",
+                            }, function (response) {
+                                console.log(response);
+                            });
+                        })
+                        console.log("has button", $(monkey).has("button").length)
+                        if ($(monkey).find("button").length == 0) {
+                            $(monkey).append(
+                                btn
+                            )
+                            $(monkey).append(
+                                btn2
+                            )
+                        }
+
                     })
                 }
                 if ($(element).hasClass("item")) {
                     var info = $($(element).find(".info p").get(1)).text()
                     var priceDiv = $(element).find(".price span").first()
                     var price = $($(element).find(".price span").get(0)).text()
+                    if (!info || !priceDiv || !price) {
+                        return
+                    }
                     var kg = info.split('·')[1].split(' ')[0]
                     var arg1 = info.split('·')[0].split('/')[0]
                     var arg2 = info.split('·')[0].split('/')[1]
