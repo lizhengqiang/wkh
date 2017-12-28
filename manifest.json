@@ -1,0 +1,44 @@
+{
+    "manifest_version": 2,
+    "name": "玩客猴助手",
+    "description": "little monkey",
+    "version": "0.1",
+    "browser_action": {
+        "default_icon": {
+            "19": "mine.svg",
+            "38": "mine.svg"
+        },
+        "default_title": "玩客猴助手",
+        "default_popup": "popup.html"
+    },
+    "permissions": [
+        "*://h.miguan.in/*",
+        "*://api.h.miguan.in/*",
+        "tabs",
+        "activeTab",
+        "webRequest",
+        "webRequestBlocking",
+        "notifications",
+        "storage"
+    ],
+    "content_scripts": [
+        {
+            "matches": [
+                "*://h.miguan.in/*"
+            ],
+            "css": [],
+            "js": [
+                "zepto.min.js",
+                "inject.js"
+            ],
+            "run_at": "document_idle",
+            "all_frames": true
+        }
+    ],
+    "background": {
+        "scripts": [
+            "background.js"
+        ],
+        "persistent": true
+    }
+}

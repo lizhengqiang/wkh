@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=\, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="./zepto.min.js"></script>
+</head>
+
+<body>
+    <p>Welcome</p>
+    <a id="inject">Inject</a>
+
+    <script>
+        $("#inject").click(function () {
+            chrome.tabs.executeScript(null,
+                { code: "console.log('Hello ExcuteScript')" });
+        })
+
+        // $.post("http://api.h.miguan.in/game/homePage", {
+        //     orderBy: 1,
+        //     sort: 0,
+        //     status: 1,
+        //     current: 1,
+        //     id: null,
+        //     gen: 5,
+        // }, function (resp) {
+        //     console.log(resp)
+        // })
+    </script>
+</body>
+
+</html>
