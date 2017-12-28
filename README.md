@@ -3,11 +3,13 @@
 
 # STEP 2 打开链课钱包
 
-# STEP 3 (Mac Only)Windows请耐心等待修复IPC问题
+# STEP 3
 https://github.com/lizhengqiang/auto
 > 下载此项目中的 feed-mac.bin 文件
+> Windows请下载 feed-win.exe 文件
 
 ## 使用 feed-mac.bin -dataDir=~/Library/OTCWalletData 启动
+## Windows使用 feed-win.exe -dataDir=\\.\pipe\geth.ipc -proto=windows 启动
 
 # STEP 在Chrome打开浏览器，在自己猴下方点击喂养即可
 
