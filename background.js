@@ -3,9 +3,16 @@ chrome.webRequest.onCompleted.addListener(
     function (details) {
         console.log(details)
         chrome.tabs.getSelected(null, function (tab) {
-            chrome.tabs.sendRequest(tab.id, {}, function (response) {
-                console.log(response);
-            });
+            chrome.storage.sync.get({
+                "mode": "value",
+                "min": 0.1,
+                "kg": false,
+            }, function (result) {
+                chrome.tabs.sendRequest(tab.id, result, function (response) {
+                    console.log(response);
+                });
+            })
+
         });
         return true;
     },

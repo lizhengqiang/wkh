@@ -7,29 +7,26 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <script src="./zepto.min.js"></script>
+
 </head>
 
 <body>
-    <p>Welcome</p>
-    <a id="inject">Inject</a>
+    <p>筛选方案</p>
+    <select id="mode">
+        <option value="value">掘金价值</option>
+        <option value="quick">捡漏</option>
+    </select>
+    <p>考虑体重</p>
+    <select id="kg">
+        <option value="true">是</option>
+        <option value="false">否</option>
+    </select>
+    <p>提示系数最小值</p>
+    <input type="number" id="min" />
+    <p></p>
+    <button id="update">更新</button>
 
-    <script>
-        $("#inject").click(function () {
-            chrome.tabs.executeScript(null,
-                { code: "console.log('Hello ExcuteScript')" });
-        })
-
-        // $.post("http://api.h.miguan.in/game/homePage", {
-        //     orderBy: 1,
-        //     sort: 0,
-        //     status: 1,
-        //     current: 1,
-        //     id: null,
-        //     gen: 5,
-        // }, function (resp) {
-        //     console.log(resp)
-        // })
-    </script>
 </body>
+<script src="./app.js"></script>
 
 </html>
