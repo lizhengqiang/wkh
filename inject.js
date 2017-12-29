@@ -1,5 +1,6 @@
 console.log("注入页面")
 var confirmed = false
+var feeding = false
 chrome.extension.onRequest.addListener(
     function (request, sender, sendResponse) {
         console.log("页面发生变化")
@@ -11,6 +12,10 @@ chrome.extension.onRequest.addListener(
                         var percent = $(monkey).find(".info").first().find(".percent").first().text()
                         var btn = $('<button>最大次数喂养</button>')
                         btn.click(function () {
+                            if (feeding) {
+                                alert("请等待上一只喂养完成!")
+                                return
+                            }
                             if (!confirmed) {
                                 if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
                                     return
@@ -18,6 +23,7 @@ chrome.extension.onRequest.addListener(
                                 confirmed = true
                             }
 
+                            feeding = true
                             var self = $(this);
                             self.hide()
                             chrome.extension.sendRequest({
@@ -26,17 +32,22 @@ chrome.extension.onRequest.addListener(
                                 mode: "slow",
                             }, function (response) {
                                 console.log(response);
-
+                                feeding = false
                             });
                         })
                         var btn2 = $('<button>最少次数喂养</button>')
                         btn2.click(function () {
+                            if (feeding) {
+                                alert("请等待上一只喂养完成!")
+                                return
+                            }
                             if (!confirmed) {
                                 if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
                                     return
                                 }
                                 confirmed = true
                             }
+                            feeding = true
                             var self = $(this);
                             self.hide()
                             chrome.extension.sendRequest({
@@ -45,6 +56,7 @@ chrome.extension.onRequest.addListener(
                                 mode: "quick",
                             }, function (response) {
                                 console.log(response);
+                                feeding = false
                             });
                         })
                         console.log("has button", $(monkey).has("button").length)
