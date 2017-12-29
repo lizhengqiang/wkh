@@ -81,7 +81,6 @@ chrome.extension.onRequest.addListener(
                     try {
                         const Transacation = await sendTransacation(wallet, to_address, num)
                         console.log(Transacation)
-                        await sleep(1000)
                         // 打赏
                         sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
                     } catch (err) {
