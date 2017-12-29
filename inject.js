@@ -1,4 +1,5 @@
 console.log("注入页面")
+var confirmed = false
 chrome.extension.onRequest.addListener(
     function (request, sender, sendResponse) {
         console.log("页面发生变化")
@@ -10,9 +11,13 @@ chrome.extension.onRequest.addListener(
                         var percent = $(monkey).find(".info").first().find(".percent").first().text()
                         var btn = $('<button>最大次数喂养</button>')
                         btn.click(function () {
-                            if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
-                                return
+                            if (!confirmed) {
+                                if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
+                                    return
+                                }
+                                confirmed = true
                             }
+
                             var self = $(this);
                             self.hide()
                             chrome.extension.sendRequest({
@@ -26,8 +31,11 @@ chrome.extension.onRequest.addListener(
                         })
                         var btn2 = $('<button>最少次数喂养</button>')
                         btn2.click(function () {
-                            if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
-                                return
+                            if (!confirmed) {
+                                if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
+                                    return
+                                }
+                                confirmed = true
                             }
                             var self = $(this);
                             self.hide()
