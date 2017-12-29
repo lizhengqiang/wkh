@@ -69,7 +69,7 @@ chrome.extension.onRequest.addListener(
             const mode = request.mode;
             const limit = request.limit;
             const id = request.id;
-            const num = limit.toFixed(0);
+            var num = limit.toFixed(0);
             const idNum = Number('0.' + id)
             if (mode == "quick") {
                 if (num + idNum > limit) {
