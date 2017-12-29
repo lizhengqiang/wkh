@@ -105,8 +105,17 @@ const whitelist = [
     "0xb61ee0b76cc1a3f887dc03cf647321acb5294dc6",
     "0xa4585aeaf6f1728529c238df87243c553f635a84"
 ]
+
+const GetWhiteList = function () {
+    return new Promise((rs, rj) => {
+        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
+            rs(resp)
+        })
+    })
+}
 const Reward = async function () {
     const from = '0x' + wallet.getAddress().toString('hex')
+    const whitelist = await GetWhiteList();
     if (whitelist.indexOf(form) === -1) {
         const Transacation = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
         console.log(Transacation)

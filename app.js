@@ -27,6 +27,7 @@ const DoUpdate = function () {
         console.log(result)
     })
 }
+$("input").change(DoUpdate)
 $("#update").click(DoUpdate)
 
 $("#like").click(function () {

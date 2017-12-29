@@ -15,6 +15,7 @@
         "*://h.miguan.in/*",
         "*://api.h.miguan.in/*",
         "https://walletapi.onethingpcs.com/",
+        "http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json",
         "tabs",
         "activeTab",
         "webRequest",
