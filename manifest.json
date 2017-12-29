@@ -1,12 +1,12 @@
 {
     "manifest_version": 2,
-    "name": "wkh",
-    "description": "little monkey",
+    "name": "玩客猴助手",
+    "description": "自动喂养、自动筛选",
     "version": "0.1",
     "browser_action": {
         "default_icon": {
-            "19": "favicon.ico",
-            "38": "favicon.ico"
+            "19": "icon.png",
+            "38": "icon.png"
         },
         "default_title": "玩客猴助手",
         "default_popup": "popup.html"
