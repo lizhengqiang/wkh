@@ -23,7 +23,8 @@ chrome.extension.onRequest.addListener(
                                 confirmed = true
                             }
 
-                            self.hide()
+                            btn.hide()
+                            btn2.hide()
                             feeding = true
 
                             chrome.extension.sendRequest({

