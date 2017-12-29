@@ -1,6 +1,5 @@
 console.log("注入页面")
 var confirmed = false
-var feeding = false
 chrome.extension.onRequest.addListener(
     function (request, sender, sendResponse) {
         console.log("页面发生变化")
@@ -10,30 +9,21 @@ chrome.extension.onRequest.addListener(
                     $(element).find(".panel").forEach(monkey => {
                         console.log(monkey)
                         var percent = $(monkey).find(".info").first().find(".percent").first().text()
-
                         var doFeed = function (self, mode) {
-                            if (feeding) {
-                                alert("请等待上一只喂养完成!")
-                                return
-                            }
                             if (!confirmed) {
                                 if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
                                     return
                                 }
                                 confirmed = true
                             }
-
                             btn.hide()
                             btn2.hide()
-                            feeding = true
-
                             chrome.extension.sendRequest({
                                 id: $(monkey).find(".id").first().text().split(' ')[1],
                                 limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
                                 mode: mode,
                             }, function (response) {
                                 console.log(response);
-                                feeding = false
                             });
                         }
                         var btn = $('<button style="margin:1px;border-color:red;">最大次数喂养</button>')

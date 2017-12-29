@@ -2,7 +2,7 @@
     "manifest_version": 2,
     "name": "玩客猴助手",
     "description": "自动喂养、自动筛选",
-    "version": "0.1",
+    "version": "0.2",
     "browser_action": {
         "default_icon": {
             "19": "icon.png",
