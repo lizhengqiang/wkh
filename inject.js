@@ -10,8 +10,8 @@ chrome.extension.onRequest.addListener(
                     $(element).find(".panel").forEach(monkey => {
                         console.log(monkey)
                         var percent = $(monkey).find(".info").first().find(".percent").first().text()
-                        var btn = $('<button>最大次数喂养</button>')
-                        btn.click(function () {
+
+                        var doFeed = function (self, mode) {
                             if (feeding) {
                                 alert("请等待上一只喂养完成!")
                                 return
@@ -23,41 +23,25 @@ chrome.extension.onRequest.addListener(
                                 confirmed = true
                             }
 
-                            feeding = true
-                            var self = $(this);
                             self.hide()
+                            feeding = true
+
                             chrome.extension.sendRequest({
                                 id: $(monkey).find(".id").first().text().split(' ')[1],
                                 limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
-                                mode: "slow",
+                                mode: mode,
                             }, function (response) {
                                 console.log(response);
                                 feeding = false
                             });
+                        }
+                        var btn = $('<button style="margin:1px;border-color:red;">最大次数喂养</button>')
+                        var btn2 = $('<button style="margin:1px;border-color:red;">最少次数喂养</button>')
+                        btn.click(function () {
+                            doFeed($(this), "slow")
                         })
-                        var btn2 = $('<button>最少次数喂养</button>')
                         btn2.click(function () {
-                            if (feeding) {
-                                alert("请等待上一只喂养完成!")
-                                return
-                            }
-                            if (!confirmed) {
-                                if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
-                                    return
-                                }
-                                confirmed = true
-                            }
-                            feeding = true
-                            var self = $(this);
-                            self.hide()
-                            chrome.extension.sendRequest({
-                                id: $(monkey).find(".id").first().text().split(' ')[1],
-                                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
-                                mode: "quick",
-                            }, function (response) {
-                                console.log(response);
-                                feeding = false
-                            });
+                            doFeed($(this), "quick")
                         })
                         console.log("has button", $(monkey).has("button").length)
                         if ($(monkey).find("button").length == 0) {

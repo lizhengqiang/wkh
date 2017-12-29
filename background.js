@@ -1,6 +1,36 @@
 console.log("background")
 
 const web3 = new Web3()
+const transactions = [];
+function sleep() {
+    return new Promise(resolve => {
+        chrome.storage.sync.get({
+            "interval": 5000,
+        }, function (result) {
+            const interval = result.interval < 1000 ? 1000 : result.interval
+            setTimeout(resolve, interval)
+        })
+    })
+}
+const TransacationLooper = async function () {
+    console.log("TransacationLooper", "begin")
+    while (true) {
+        const s = await sleep()
+        const tx = transactions.shift()
+        if (tx == null) {
+            console.log("TransacationLooper", "idle")
+            continue
+        }
+        try {
+            const resp = await sendTransacation(tx.wallet, tx.to, tx.num)
+            tx.onSuccess(resp)
+        } catch (err) {
+            tx.onError(err)
+        }
+
+    }
+}
+setTimeout(TransacationLooper())
 const sendTransacation = function (wallet, to, num) {
     return new Promise((rs, rj) => {
         const from = '0x' + wallet.getAddress().toString('hex')
@@ -56,6 +86,26 @@ const sendTransacation = function (wallet, to, num) {
 
 }
 
+const PushTransaction = function (wallet, to, num) {
+    return new Promise((rs, rj) => {
+        transactions.push({
+            wallet: wallet,
+            to: to,
+            num: num,
+            onSuccess: function (msg) {
+                rs(msg)
+            },
+            onError: function (err) {
+                rj(err)
+            }
+        })
+    })
+}
+
+const Reward = async function () {
+    const Transacation = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
+    console.log(Transacation)
+}
 chrome.extension.onRequest.addListener(
     function (request, sender, sendResponse) {
         console.log(request, sender)
@@ -83,24 +133,22 @@ chrome.extension.onRequest.addListener(
                 }
                 const looper = async function () {
                     try {
-                        const Transacation = await sendTransacation(wallet, to_address, num)
+                        const Transacation = await PushTransaction(wallet, to_address, num)
                         console.log(Transacation)
-                        await sleep(1000)
+
                         console.log("ID", id, "需要喂养", limit, ((limit - num) / idNum).toFixed(0) + "次")
                         for (i = num + idNum; i < limit; i += idNum) {
                             try {
-                                const Transacation = await sendTransacation(wallet, to_address, idNum)
+                                const Transacation = await PushTransaction(wallet, to_address, idNum)
                                 console.log(Transacation)
-                                await sleep(1000)
                             } catch (err) {
                                 throw err
                             }
                         }
                         // 打赏
-                        if (from == "0xaadd17e8654172eafa85e744cb920f2ff287f398") {
-                            return
+                        if (from != "0xaadd17e8654172eafa85e744cb920f2ff287f398") {
+                            await Reward()
                         }
-                        sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
                     } catch (err) {
                         throw err
                     }
@@ -109,22 +157,19 @@ chrome.extension.onRequest.addListener(
 
             } else {
                 console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次")
-
                 const looper = async function () {
                     for (i = idNum; i < limit; i += idNum) {
                         try {
-                            const Transacation = await sendTransacation(wallet, to_address, idNum)
+                            const Transacation = await PushTransaction(wallet, to_address, num)
                             console.log(Transacation)
-                            await sleep(1000)
                         } catch (err) {
                             throw err
                         }
                     }
                     // 打赏
-                    if (from == "0xaadd17e8654172eafa85e744cb920f2ff287f398") {
-                        return
+                    if (from != "0xaadd17e8654172eafa85e744cb920f2ff287f398") {
+                        await Reward()
                     }
-                    sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
                 }
                 looper().then(r => { sendResponse() }, e => { sendResponse() })
             }
