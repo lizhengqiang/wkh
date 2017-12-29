@@ -84,13 +84,23 @@ chrome.extension.onRequest.addListener(
                 })
             } else {
                 console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次")
-                for (i = idNum; i < limit; i += idNum) {
-                    sendTransacation(wallet, to_address, idNum).then(Transacation => {
-                        console.log(Transacation)
-                    }, err => {
-                        alert(err)
-                    })
+                function sleep(ms) {
+                    return new Promise(resolve => setTimeout(resolve, ms))
                 }
+                const looper = async function () {
+                    for (i = idNum; i < limit; i += idNum) {
+                        try {
+                            const Transacation = await sendTransacation(wallet, to_address, idNum)
+                            console.log(Transacation)
+                            await sleep(1000)
+                        } catch (err) {
+                            throw err
+                        }
+
+                    }
+                }
+                looper()
+
             }
         })
     }
