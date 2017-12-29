@@ -14,8 +14,8 @@ chrome.extension.onRequest.addListener(
                             self.hide()
                             chrome.extension.sendRequest({
                                 id: $(monkey).find(".id").first().text().split(' ')[1],
-                                limit: (percent.split('/')[1] - percent.split('/')[0]).toFixed(2),
-                                mode: "min",
+                                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
+                                mode: "slow",
                             }, function (response) {
                                 console.log(response);
 
@@ -27,8 +27,8 @@ chrome.extension.onRequest.addListener(
                             self.hide()
                             chrome.extension.sendRequest({
                                 id: $(monkey).find(".id").first().text().split(' ')[1],
-                                limit: (percent.split('/')[1] - percent.split('/')[0]).toFixed(2),
-                                mode: "max",
+                                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
+                                mode: "quick",
                             }, function (response) {
                                 console.log(response);
                             });

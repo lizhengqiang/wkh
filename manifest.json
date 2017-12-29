@@ -14,7 +14,7 @@
     "permissions": [
         "*://h.miguan.in/*",
         "*://api.h.miguan.in/*",
-        "http://localhost:65399/feedmonkeys",
+        "https://walletapi.onethingpcs.com/",
         "tabs",
         "activeTab",
         "webRequest",
@@ -38,6 +38,9 @@
     ],
     "background": {
         "scripts": [
+            "web3.min.js",
+            "ethereumjs-tx-1.3.3.min.js",
+            "ethereumjs-wallet-0.6.0.js",
             "zepto.min.js",
             "background.js"
         ],

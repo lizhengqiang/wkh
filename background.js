@@ -1,33 +1,98 @@
 console.log("background")
+
+const web3 = new Web3()
+const sendTransacation = function (wallet, to, num) {
+    return new Promise((rs, rj) => {
+        const from = '0x' + wallet.getAddress().toString('hex')
+        console.log("from", from)
+        $.ajax({
+            type: 'POST',
+            url: "https://walletapi.onethingpcs.com/",
+            data: JSON.stringify({
+                "jsonrpc": "2.0",
+                "method": "eth_getTransactionCount",
+                "params": [from, "pending"],
+                "id": 1
+            }),
+            contentType: 'application/json',
+            success: function (TransactionCount) {
+                const txParams = {
+                    from: from,
+                    to: to,
+                    value: web3.toHex(web3.toWei(num)),
+                    gasLimit: '0x186a0',
+                    gasPrice: '0x174876e800',
+                    nonce: TransactionCount.result,
+                }
+                const tx = new ethereumjs.Tx(txParams)
+                tx.sign(wallet.getPrivateKey())
+                const serializedTx = tx.serialize()
+                const raw = '0x' + serializedTx.toString('hex')
+                $.ajax({
+                    type: 'POST',
+                    url: "https://walletapi.onethingpcs.com/",
+                    data: JSON.stringify({
+                        "jsonrpc": "2.0",
+                        "method": "eth_sendRawTransaction",
+                        "params": [raw],
+                        "id": 1
+                    }),
+                    contentType: 'application/json',
+                    success: function (Transaction) {
+                        rs(Transaction)
+                    },
+                    error: function (xhr, type) {
+                        rj('eth_sendRawTransaction error!')
+                    }
+                })
+            },
+            error: function (xhr, type) {
+                rj('eth_getTransactionCount error!')
+            }
+        })
+    })
+
+
+
+}
+
 chrome.extension.onRequest.addListener(
     function (request, sender, sendResponse) {
+        console.log(request, sender)
         chrome.storage.sync.get({
-            "from_address": null,
             "to_address": null,
             "password": null,
+            "wallet": null,
         }, function (result) {
-            $.ajax({
-                type: 'POST',
-                url: "http://localhost:65399/feedmonkeys",
-                data: JSON.stringify({
-                    "from_address": result.from_address,
-                    "to_address": result.to_address,
-                    "pwd": result.password,
-                    "monkeys": [{ id: request.id, limit: request.limit, mode: request.mode }]
-
-                }),
-                contentType: 'application/json',
-                success: function (data) {
-                    sendResponse(request)
-                },
-                error: function (xhr, type) {
-                    alert('Ajax error!')
+            const wallet = ethereumjs.Wallet.fromV3(result.wallet, result.password)
+            const to_address = result.to_address
+            const mode = request.mode;
+            const limit = request.limit;
+            const id = request.id;
+            const num = limit.toFixed(0);
+            const idNum = Number('0.' + id)
+            if (mode == "quick") {
+                if (num + idNum > limit) {
+                    num = num - 1 + idNum
+                } else {
+                    num = num + idNum
                 }
-            })
-
+                sendTransacation(wallet, to_address, num).then(Transacation => {
+                    console.log(Transacation)
+                }, err => {
+                    alert(err)
+                })
+            } else {
+                console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次")
+                for (i = idNum; i < limit; i += idNum) {
+                    sendTransacation(wallet, to_address, idNum).then(Transacation => {
+                        console.log(Transacation)
+                    }, err => {
+                        alert(err)
+                    })
+                }
+            }
         })
-
-
     }
 )
 chrome.webRequest.onCompleted.addListener(

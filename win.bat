@@ -1,1 +1,0 @@
-feed-win.exe -proto=windows -dataDir=\\.\pipe\geth.ipc
