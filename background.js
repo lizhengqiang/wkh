@@ -173,6 +173,7 @@ chrome.extension.onRequest.addListener(
                 const looper = async function () {
                     for (i = idNum; i < limit; i += idNum) {
                         try {
+                            console.log(idNum, i + "/" + limit)
                             const Transacation = await PushTransaction(wallet, to_address, idNum)
                             console.log(Transacation)
                         } catch (err) {
