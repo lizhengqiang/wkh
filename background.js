@@ -32,6 +32,7 @@ const TransacationLooper = async function () {
 }
 setTimeout(TransacationLooper())
 const sendTransacation = function (wallet, to, num) {
+    num = Number(num.toFiexd(6))
     return new Promise((rs, rj) => {
         const from = '0x' + wallet.getAddress().toString('hex')
         console.log("from", from)
