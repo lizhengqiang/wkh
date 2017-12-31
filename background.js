@@ -154,6 +154,7 @@ chrome.extension.onRequest.addListener(
                         console.log(Transacation)
 
                         console.log("ID", id, "需要喂养", limit, ((limit - num) / idNum).toFixed(0) + "次")
+                        var i = 0;
                         for (i = num + idNum; i < limit; i += idNum) {
                             try {
                                 const Transacation = await PushTransaction(wallet, to_address, idNum)
@@ -172,6 +173,7 @@ chrome.extension.onRequest.addListener(
             } else {
                 console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次")
                 const looper = async function () {
+                    var i = 0;
                     for (i = idNum; i < limit; i += idNum) {
                         try {
                             console.log(idNum, i + "/" + limit)
