@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=\, initial-scale=1.0">
+    <meta name="viewport" content="initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
     <script src="./zepto.min.js"></script>
@@ -21,6 +21,8 @@
         <option value="true">是</option>
         <option value="false">否</option>
     </select>
+    <p>喂养时间间隔/s</p>
+    <input type="number" id="interval" min="1">
     <p>提示系数最小值</p>
     <input type="number" id="min" />
     <p></p>
@@ -33,7 +35,6 @@
     <input type="text" id="to_address" />
     <p></p>
     <button id="update">更新</button>
-
     <p></p>
     <button id="like">打赏</button>
 
