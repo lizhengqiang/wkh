@@ -14,7 +14,7 @@
 
 * 下载[zip插件包][011]
 * 打开[chrome扩展程序][012]加载插件
-    ![image](./pics/install.jpg)
+    ![image](public/install.jpg)
 * 在Chrome打开玩客猴h5，在自己猴下方点击喂养即可
 
 ## Special Explanation

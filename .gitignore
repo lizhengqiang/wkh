@@ -2,3 +2,4 @@
 *.zip
 *.crx
 .idea
+node_modules

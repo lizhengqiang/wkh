@@ -1,3 +1,73 @@
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "/";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ })
+/************************************************************************/
+/******/ ({
+
+/***/ 4:
+/***/ (function(module, exports) {
+
 console.log("background");
 
 const web3 = new Web3();
@@ -19,7 +89,7 @@ const TransacationLooper = async function () {
     while (true) {
         const s = await sleep();
         const tx = transactions.shift();
-        if (tx == null) {
+        if (tx === undefined) {
             console.log("TransacationLooper", "idle");
             continue
         }
@@ -29,11 +99,10 @@ const TransacationLooper = async function () {
         } catch (err) {
             tx.onError(err)
         }
-
     }
 };
 
-setTimeout(TransacationLooper());
+setTimeout(TransacationLooper);
 const sendTransacation = function (wallet, to, num) {
     num = Number(num.toFixed(6));
     return new Promise((rs, rj) => {
@@ -94,22 +163,15 @@ const PushTransaction = function (wallet, to, num) {
             wallet: wallet,
             to: to,
             num: num,
-            onSuccess: function (msg) {
+            onSuccess: msg => {
                 rs(msg)
             },
-            onError: function (err) {
+            onError: err => {
                 rj(err)
             }
         })
     })
 };
-
-const whitelist = [
-    "0xaadd17e8654172eafa85e744cb920f2ff287f398",
-    "0x397a5941e30d0d08e2c29d7b10985e066c34fc57",
-    "0xb61ee0b76cc1a3f887dc03cf647321acb5294dc6",
-    "0xa4585aeaf6f1728529c238df87243c553f635a84"
-];
 
 const GetWhiteList = function () {
     return new Promise((rs, rj) => {
@@ -126,7 +188,8 @@ const Reward = async function () {
         console.log(Transacation)
     }
 };
-chrome.extension.onRequest.addListener(
+
+chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         console.log(request, sender);
         chrome.storage.sync.get({
@@ -199,22 +262,39 @@ chrome.extension.onRequest.addListener(
         })
     }
 );
+
+/**
+ * 监听页面变化
+ */
 chrome.webRequest.onCompleted.addListener(
     function (details) {
         console.log(details);
-        chrome.tabs.getSelected(null, function (tab) {
+        chrome.tabs.query({active: true}, function (tabs) {
+            console.log(tabs);
             chrome.storage.sync.get({
                 "mode": "value",
                 "min": 0.1,
                 "kg": false,
             }, function (result) {
-                chrome.tabs.sendRequest(tab.id, result, function (response) {
+                const tab = tabs[0];
+                let path = null;
+                if (tab.url === "http://h.miguan.in/home") {
+                    path = "/home";
+                } else if (tab.url.indexOf("http://h.miguan.in/monkey") !== -1) {
+                    path = "/monkey";
+                }
+                result.path = path;
+                chrome.tabs.sendMessage(tab.id, result, function (response) {
                     console.log(response);
                 });
             })
-
         });
         return true;
     },
     {urls: ["http://api.h.miguan.in/*"]}
 );
+
+/***/ })
+
+/******/ });
+//# sourceMappingURL=background.js.map
