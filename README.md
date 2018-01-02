@@ -25,8 +25,9 @@
 ## FAQ
 
 1. 钱包地址
+    * 链克口袋-账户-导出备份-用记事本打开-拷贝内容
     ```json
-    {"address": "your wallet address"}
+    {"address": "your wallet address"...}
     ```
 1. 最大次数喂养，每次喂养0.ID
 1. 最小次数喂养，先喂养一次4.ID 然后喂养多次0.ID
