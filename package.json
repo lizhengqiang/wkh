@@ -6,6 +6,7 @@
     "build": "node scripts/build.js"
   },
   "devDependencies": {
+    "@types/zepto": "^1.0.29",
     "awesome-typescript-loader": "^3.4.1",
     "chalk": "^2.3.0",
     "filesize": "^3.5.11",

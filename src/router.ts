@@ -1,18 +1,18 @@
-export type Handler = ((ctx: Context) => void)
+export type Handler = ((ctx: Context) => Promise<any>)
 
-function Next(ctx: Context) {
+async function Next(ctx: Context) {
     let handlers = ctx.handlers;
     let n = ctx.handlerIndex(-1) + 1;
     if (n < handlers.length) {
         ctx.handlerIndex(n);
-        handlers[n](ctx);
+        await handlers[n](ctx);
     }
 }
 
 export class Context {
-    request: any;
+    request: { path: string, [key: string]: any };
     sender: any;
-    sendResponse: (response: any) => void;
+    response: any;
 
     handlers: Handler[];
     values: { [key: string]: any };
@@ -25,8 +25,8 @@ export class Context {
         this.currentHandlerIndex = currentHandlerIndex;
     }
 
-    next() {
-        Next(this);
+    async next() {
+        await Next(this);
     }
 
     handlerIndex(n: number): number {
@@ -51,29 +51,49 @@ export class Route {
 }
 
 export class Router {
-    m: { [key: string]: Route };
+    middleware: Handler[];
+    routes: { [key: string]: Route };
 
-    constructor(m: { [p: string]: Route } = {}) {
-        this.m = m;
+    constructor(middleware: Handler[] = [], routes: { [p: string]: Route } = {}) {
+        this.middleware = middleware;
+        this.routes = routes;
+    }
+
+    use(...handlers: Handler[]) {
+        this.middleware.push(...handlers);
     }
 
     handle(key: string, ...handlers: Handler[]) {
-        if (this.m[key] == null) {
-            this.m[key] = new Route([...handlers]);
+        if (this.routes[key] == null) {
+            this.routes[key] = new Route([...handlers]);
         }
-        this.m[key].join(...handlers);
+        this.routes[key].join(...handlers);
     }
 
-    serve(key: string, ctx: Context) {
-        let route = this.m[key];
+    async serve(key: string, ctx: Context) {
+        let route = this.routes[key];
         if (route == null) {
             return
         }
-        ctx.handlers = route.handlers;
-        Next(ctx)
+        ctx.handlers = [...this.middleware, ...route.handlers];
+        await Next(ctx)
     }
 
     run() {
-
+        chrome.runtime.onMessage.addListener(
+            (request: any, sender: any, sendResponse: (response: any) => void) => {
+                let context = new Context();
+                context.request = request;
+                context.sender = sender;
+                context.response = {};
+                this.serve(request.path, context).
+                catch(function (err) {
+                    console.log(err);
+                    sendResponse(context.response);
+                }).then(function () {
+                    sendResponse(context.response)
+                });
+            }
+        );
     }
 }

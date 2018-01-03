@@ -1,3 +1,6 @@
+import { QUICK, VALUE, HOME, MONKEY, TRANSACTION } from "./consts";
+import { Router } from "./router";
+
 console.log("background");
 
 const web3 = new Web3();
@@ -14,17 +17,17 @@ function sleep() {
     })
 }
 
-const TransacationLooper = async function () {
-    console.log("TransacationLooper", "begin");
+const TransactionLooper = async function () {
+    console.log("TransactionLooper", "begin");
     while (true) {
         const s = await sleep();
         const tx = transactions.shift();
         if (tx === undefined) {
-            console.log("TransacationLooper", "idle");
+            console.log("TransactionLooper", "idle");
             continue
         }
         try {
-            const resp = await sendTransacation(tx.wallet, tx.to, tx.num);
+            const resp = await SendTransaction(tx.wallet, tx.to, tx.num);
             tx.onSuccess(resp)
         } catch (err) {
             tx.onError(err)
@@ -32,8 +35,8 @@ const TransacationLooper = async function () {
     }
 };
 
-setTimeout(TransacationLooper);
-const sendTransacation = function (wallet, to, num) {
+setTimeout(TransactionLooper);
+const SendTransaction = function (wallet, to, num) {
     num = Number(num.toFixed(6));
     return new Promise((rs, rj) => {
         const from = `0x${wallet.getAddress().toString('hex')}`;
@@ -103,25 +106,18 @@ const PushTransaction = function (wallet, to, num) {
     })
 };
 
-const GetWhiteList = function () {
-    return new Promise((rs, rj) => {
-        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
-            rs(resp)
-        })
-    })
-};
-const Reward = async function () {
-    const from = `0x${wallet.getAddress().toString('hex')}`;
-    const whitelist = await GetWhiteList();
-    if (whitelist.indexOf(from) === -1) {
-        const Transacation = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5);
-        console.log(Transacation)
+const Reward = async function (wallet, is) {
+    if (is) {
+        const Transaction = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5);
+        console.log(Transaction)
     }
 };
 
-chrome.runtime.onMessage.addListener(
-    function (request, sender, sendResponse) {
-        console.log(request, sender);
+const router = new Router();
+
+router.handle(TRANSACTION, ctx => {
+    return new Promise((resolve, reject) => {
+        let {request} = ctx;
         chrome.storage.sync.get({
             "to_address": null,
             "password": null,
@@ -129,26 +125,23 @@ chrome.runtime.onMessage.addListener(
         }, function (result) {
             const wallet = ethereumjs.Wallet.fromV3(result.wallet, result.password);
             const from = `0x${wallet.getAddress().toString('hex')}`;
-            const to_address = result.to_address;
-            const mode = request.mode;
-            const limit = request.limit;
-            const id = request.id;
+            const {to_address} = result;
+            const {mode, limit, id, reward} = request;
             let num = limit.toFixed(0);
             const idNum = Number(`0.${id}`);
             if (idNum > limit) {
-                sendResponse();
                 return
             }
-            if (mode === "quick") {
+            if (mode === QUICK) {
                 if (num + idNum > limit) {
                     num = num - 1 + idNum
                 } else {
                     num = num + idNum
                 }
-                const looper = async function () {
+                const loop = async function () {
                     try {
-                        const Transacation = await PushTransaction(wallet, to_address, num);
-                        console.log(Transacation);
+                        const Transaction = await PushTransaction(wallet, to_address, num);
+                        console.log(Transaction);
 
                         console.log("ID", id, "需要喂养", limit, ((limit - num) / idNum).toFixed(0) + "次");
                         for (let i = num + idNum; i < limit; i += idNum) {
@@ -159,19 +152,19 @@ chrome.runtime.onMessage.addListener(
                                 throw err
                             }
                         }
-                        await Reward()
+                        await Reward(wallet, reward)
                     } catch (err) {
                         throw err
                     }
                 };
-                looper().then(r => {
-                    sendResponse()
-                }, e => {
-                    sendResponse()
-                })
+                loop().then(() => {
+                    resolve();
+                }, () => {
+                    reject();
+                });
             } else {
                 console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次");
-                const looper = async function () {
+                const loop = async function () {
                     for (let i = idNum; i < limit; i += idNum) {
                         try {
                             console.log(idNum, i + "/" + limit);
@@ -181,17 +174,19 @@ chrome.runtime.onMessage.addListener(
                             throw err
                         }
                     }
-                    await Reward()
+                    await Reward(wallet, reward)
                 };
-                looper().then(r => {
-                    sendResponse()
-                }, e => {
-                    sendResponse()
+                loop().then(() => {
+                    resolve();
+                }, () => {
+                    reject()
                 })
             }
         })
-    }
-);
+    });
+});
+
+router.run();
 
 /**
  * 监听页面变化
@@ -202,16 +197,19 @@ chrome.webRequest.onCompleted.addListener(
         chrome.tabs.query({active: true}, function (tabs) {
             console.log(tabs);
             chrome.storage.sync.get({
-                "mode": "value",
+                "mode": VALUE,
                 "min": 0.1,
                 "kg": false,
+                "wallet": null,
             }, function (result) {
                 const tab = tabs[0];
                 let path = null;
                 if (tab.url === "http://h.miguan.in/home") {
-                    path = "/home";
+                    path = HOME;
                 } else if (tab.url.indexOf("http://h.miguan.in/monkey") !== -1) {
-                    path = "/monkey";
+                    path = MONKEY;
+                } else {
+                    return
                 }
                 result.path = path;
                 chrome.tabs.sendMessage(tab.id, result, function (response) {
@@ -221,5 +219,5 @@ chrome.webRequest.onCompleted.addListener(
         });
         return true;
     },
-    {urls: ["http://api.h.miguan.in/*"]}
+    {urls: ["http://h.miguan.in/*", "http://api.h.miguan.in/*"]}
 );

