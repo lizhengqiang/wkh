@@ -5,9 +5,9 @@
     "description": "自动喂养、自动筛选",
     "version": "0.31",
     "browser_action": {
-        "default_icon": "logo.png",
+        "default_icon": "public/logo.png",
         "default_title": "玩客猴助手",
-        "default_popup": "popup.html"
+        "default_popup": "public/popup.html"
     },
     "permissions": [
         "*://h.miguan.in/*",
@@ -28,8 +28,8 @@
             ],
             "css": [],
             "js": [
-                "zepto.min.js",
-                "inject.js"
+                "public/zepto.min.js",
+                "build/inject.js"
             ],
             "run_at": "document_idle",
             "all_frames": true
@@ -37,11 +37,11 @@
     ],
     "background": {
         "scripts": [
-            "web3.min.js",
-            "ethereumjs-tx-1.3.3.min.js",
-            "ethereumjs-wallet-0.6.0.js",
-            "zepto.min.js",
-            "background.js"
+            "public/web3.min.js",
+            "public/ethereumjs-tx-1.3.3.min.js",
+            "public/ethereumjs-wallet-0.6.0.js",
+            "public/zepto.min.js",
+            "build/background.js"
         ],
         "persistent": true
     }

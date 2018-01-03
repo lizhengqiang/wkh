@@ -1,3 +1,4 @@
+import { VALUE } from "./modes";
 const interval = 'interval';
 const mode = 'mode';
 const min = 'min';
@@ -8,7 +9,7 @@ const password = 'password';
 
 chrome.storage.sync.get({
     [interval]: 5,
-    [mode]: "value",
+    [mode]: VALUE,
     [min]: 0.1,
     [kg]: false,
     [wallet]: null,
@@ -43,7 +44,7 @@ $("input").change(DoUpdate);
 $("#update").click(DoUpdate);
 $("#like").click(function () {
     DoUpdate();
-    chrome.extension.sendRequest({
+    chrome.runtime.sendMessage({
         to_address: "0x1889aea32bebda482440393d470246561a4e6ca6"
     }, function (response) {
         console.log(response);
