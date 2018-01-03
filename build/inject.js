@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -69,224 +69,259 @@
 
 "use strict";
 const QUICK = "quick";
-/* harmony export (immutable) */ __webpack_exports__["a"] = QUICK;
+/* harmony export (immutable) */ __webpack_exports__["c"] = QUICK;
 
 const SLOW = "slow";
-/* harmony export (immutable) */ __webpack_exports__["b"] = SLOW;
+/* harmony export (immutable) */ __webpack_exports__["d"] = SLOW;
 
 const VALUE = "value";
-/* harmony export (immutable) */ __webpack_exports__["c"] = VALUE;
+/* harmony export (immutable) */ __webpack_exports__["f"] = VALUE;
+
+const HOME = "/inject/home";
+/* harmony export (immutable) */ __webpack_exports__["a"] = HOME;
+
+const MONKEY = "/inject/monkey";
+/* harmony export (immutable) */ __webpack_exports__["b"] = MONKEY;
+
+const TRANSACTION = "/background/transaction";
+/* harmony export (immutable) */ __webpack_exports__["e"] = TRANSACTION;
+
 
 
 /***/ }),
-/* 1 */,
-/* 2 */
+/* 1 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+function Next(ctx) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let handlers = ctx.handlers;
+        let n = ctx.handlerIndex(-1) + 1;
+        if (n < handlers.length) {
+            ctx.handlerIndex(n);
+            yield handlers[n](ctx);
+        }
+    });
+}
+class Context {
+    constructor(handlers = [], values = {}, currentHandlerIndex = 0) {
+        this.handlers = handlers;
+        this.values = values;
+        this.currentHandlerIndex = currentHandlerIndex;
+    }
+    next() {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield Next(this);
+        });
+    }
+    handlerIndex(n) {
+        if (n < 0 || n > this.handlers.length - 1) {
+            return this.currentHandlerIndex;
+        }
+        return this.currentHandlerIndex = n;
+    }
+}
+/* unused harmony export Context */
+
+class Route {
+    constructor(handlers = []) {
+        this.handlers = handlers;
+    }
+    join(...handlers) {
+        this.handlers.push(...handlers);
+    }
+}
+/* unused harmony export Route */
+
+class Router {
+    constructor(middleware = [], routes = {}) {
+        this.middleware = middleware;
+        this.routes = routes;
+    }
+    use(...handlers) {
+        this.middleware.push(...handlers);
+    }
+    handle(key, ...handlers) {
+        if (this.routes[key] == null) {
+            this.routes[key] = new Route([...handlers]);
+        }
+        this.routes[key].join(...handlers);
+    }
+    serve(key, ctx) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let route = this.routes[key];
+            if (route == null) {
+                return;
+            }
+            ctx.handlers = [...this.middleware, ...route.handlers];
+            yield Next(ctx);
+        });
+    }
+    run() {
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            let context = new Context();
+            context.request = request;
+            context.sender = sender;
+            context.response = {};
+            this.serve(request.path, context).
+                catch(function (err) {
+                console.log(err);
+                sendResponse(context.response);
+            }).then(function () {
+                sendResponse(context.response);
+            });
+        });
+    }
+}
+/* harmony export (immutable) */ __webpack_exports__["a"] = Router;
+
+
+
+/***/ }),
+/* 2 */,
+/* 3 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__router_ts__ = __webpack_require__(3);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__router_ts___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__router_ts__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__modes__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__router_ts__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__consts_ts__ = __webpack_require__(0);
 
 
 
-const ELEMENT = "element$";
+
 const MONKEYS = "monkeys";
 const ITEM = "item";
 
 console.log("注入页面");
 let confirmed = false;
 
-let router = new __WEBPACK_IMPORTED_MODULE_0__router_ts__["Router"]();
+const router = new __WEBPACK_IMPORTED_MODULE_0__router_ts__["a" /* Router */]();
+router.use(ctx => {
+    console.log("页面发生变化");
+    ctx.next();
+});
+
 // monkeys
-router.handle(`/${MONKEYS}`, ctx => {
-    let element$ = ctx.values[ELEMENT];
-    element$.find(".panel").forEach(monkey => {
-        let btns = [];
-        btns.push({
-            button: $('<button style="margin:1px;border-color:red;">最大次数喂养</button>'),
-            mode: __WEBPACK_IMPORTED_MODULE_1__modes__["b" /* SLOW */]
-        });
-        btns.push({
-            button: $('<button style="margin:1px;border-color:red;">最少次数喂养</button>'),
-            mode: __WEBPACK_IMPORTED_MODULE_1__modes__["a" /* QUICK */]
-        });
-        console.log(monkey);
-        let elementMonkey = $(monkey);
-        let percent = elementMonkey.find(".percent").first().text();
-        let doFeed = function (self, mode) {
-            if (!confirmed) {
-                if (!confirm("喂养一只猴子需要向作者转账0.5WKC请确认")) {
-                    return
-                }
-                confirmed = true
+router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["a" /* HOME */], ctx => {
+    return new Promise((resolve, reject) => {
+        $("div").forEach(element => {
+            let element$ = $(element);
+
+            if (element$.hasClass(MONKEYS)) {
+                element$.find(".panel").forEach(monkey => {
+                    let btns = [];
+
+                    btns.push({
+                        button: $('<button style="margin:1px;border-color:red;">最大次数喂养</button>'),
+                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["d" /* SLOW */]
+                    });
+                    btns.push({
+                        button: $('<button style="margin:1px;border-color:red;">最少次数喂养</button>'),
+                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* QUICK */]
+                    });
+                    console.log(monkey);
+                    let elementMonkey = $(monkey);
+                    let percent = elementMonkey.find(".percent").first().text();
+                    let doFeed = function (self, mode) {
+                        GetWhiteList().then(whitelist => {
+                            let prompt = "喂养一只猴子需要向作者转账0.5WKC请确认";
+                            let reward = true;
+                            let {address} = JSON.parse(ctx.request.wallet);
+                            if (whitelist.indexOf(`0x${address}`) !== -1) {
+                                prompt = "请确定喂养";
+                                reward = false;
+                            }
+                            if (!confirmed) {
+                                if (!confirm(prompt)) {
+                                    return
+                                }
+                                confirmed = true
+                            }
+                            btns.forEach(btn => {
+                                btn.button.hide()
+                            });
+                            chrome.runtime.sendMessage({
+                                path: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["e" /* TRANSACTION */],
+                                id: elementMonkey.find(".id").first().text().split(' ')[1],
+                                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
+                                mode: mode,
+                                reward: reward,
+                            }, function (response) {
+                                console.log(response);
+                            });
+                        });
+                    };
+                    btns.forEach(btn => {
+                        btn.button.click(function () {
+                            doFeed($(this), btn.mode);
+                        });
+                    });
+                    console.log("has button", elementMonkey.has("button").length);
+                    if (elementMonkey.find("button").length === 0) {
+                        btns.forEach(btn => {
+                            elementMonkey.append(btn.button);
+                        });
+                    }
+                })
             }
-            btns.forEach(btn => {
-                btn.button.hide()
-            });
-            chrome.runtime.sendMessage({
-                id: elementMonkey.find(".id").first().text().split(' ')[1],
-                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
-                mode: mode,
-            }, function (response) {
-                console.log(response);
-            });
-        };
-        btns.forEach(btn => {
-            btn.button.click(function () {
-                doFeed($(this), btn.mode);
-            });
         });
-        console.log("has button", elementMonkey.has("button").length);
-        if (elementMonkey.find("button").length === 0) {
-            btns.forEach(btn => {
-                elementMonkey.append(btn.button);
-            });
-        }
-    })
+        resolve();
+    });
 });
 //items
-router.handle(`/${ITEM}`, ctx => {
-    let element$ = ctx.values[ELEMENT];
-    let info = $(element$.find(".info p").get(1)).text();
-    let priceDiv = element$.find(".price span").first();
-    let price = $(element$.find(".price span").get(0)).text();
-    if (!info || !priceDiv || !price) {
-        return
-    }
-    let kg = info.split('·')[1].split(' ')[0];
-    let arg1 = info.split('·')[0].split('/')[0];
-    let arg2 = info.split('·')[0].split('/')[1];
-    let arg3 = info.split('·')[0].split('/')[2];
-    let wkc = price.split(' ')[0];
-    let span = $(element$.find(".price").find(".price span").get(0));
-    if (span.text().indexOf(";") !== -1) {
-        wkc = span.text().split(';')[0]
-    }
-    let request = ctx.request;
-    console.log(request.mode, request.min);
-    let mark = arg1 * arg3 * (request.kg === "true" ? kg : 1);
-    let showMark = request.mode === __WEBPACK_IMPORTED_MODULE_1__modes__["c" /* VALUE */] ? mark : mark / wkc;
-    span.text(wkc + ";" + (showMark).toFixed(5));
-    if (showMark >= request.min) {
-        element$.prop("style", "background:#F00;")
-    }
+router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* MONKEY */], ctx => {
+    return new Promise((resolve, reject) => {
+        $("div").forEach(element => {
+            let element$ = $(element);
+
+            if (element$.hasClass(ITEM)) {
+                let info = $(element$.find(".info p").get(1)).text();
+                let priceDiv = element$.find(".price span").first();
+                let price = $(element$.find(".price span").get(0)).text();
+                if (!info || !priceDiv || !price) {
+                    return
+                }
+                let kg = info.split('·')[1].split(' ')[0];
+                let arg1 = info.split('·')[0].split('/')[0];
+                let arg2 = info.split('·')[0].split('/')[1];
+                let arg3 = info.split('·')[0].split('/')[2];
+                let wkc = price.split(' ')[0];
+                let span = $(element$.find(".price").find(".price span").get(0));
+                if (span.text().indexOf(";") !== -1) {
+                    wkc = span.text().split(';')[0]
+                }
+                let request = ctx.request;
+                console.log(request.mode, request.min);
+                let mark = arg1 * arg3 * (request.kg === "true" ? kg : 1);
+                let showMark = request.mode === __WEBPACK_IMPORTED_MODULE_1__consts_ts__["f" /* VALUE */] ? mark : mark / wkc;
+                span.text(wkc + ";" + (showMark).toFixed(5));
+                if (showMark >= request.min) {
+                    element$.prop("style", "background:#F00;")
+                }
+            }
+        });
+        resolve();
+    });
 });
 
-chrome.runtime.onMessage.addListener(
-    function (request, sender, sendResponse) {
-        console.log("页面发生变化");
-        setTimeout(function () {
-            $("div").forEach(element => {
-                let element$ = $(element);
+router.run();
 
-                if (element$.hasClass(MONKEYS)) {
-                    let context = new __WEBPACK_IMPORTED_MODULE_0__router_ts__["Context"]();
-                    context.request = request;
-                    context.sender = sender;
-                    context.sendResponse = sendResponse;
-                    context.values[ELEMENT] = element$;
-                    router.serve(`/${MONKEYS}`, context)
-                }
-                if (element$.hasClass(ITEM)) {
-                    let context = new __WEBPACK_IMPORTED_MODULE_0__router_ts__["Context"]();
-                    context.request = request;
-                    context.sender = sender;
-                    context.sendResponse = sendResponse;
-                    context.values[ELEMENT] = element$;
-                    router.serve(`/${ITEM}`, context);
-                }
-            });
-        }, 1000);
-        sendResponse({})
-    }
-);
-
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", { value: true });
-function Next(ctx) {
-    var handlers = ctx.handlers;
-    var n = ctx.handlerIndex(-1) + 1;
-    if (n < handlers.length) {
-        ctx.handlerIndex(n);
-        handlers[n](ctx);
-    }
-}
-var Context = /** @class */ (function () {
-    function Context(handlers, values, currentHandlerIndex) {
-        if (handlers === void 0) { handlers = []; }
-        if (values === void 0) { values = {}; }
-        if (currentHandlerIndex === void 0) { currentHandlerIndex = 0; }
-        this.handlers = handlers;
-        this.values = values;
-        this.currentHandlerIndex = currentHandlerIndex;
-    }
-    Context.prototype.next = function () {
-        Next(this);
-    };
-    Context.prototype.handlerIndex = function (n) {
-        if (n < 0 || n > this.handlers.length - 1) {
-            return this.currentHandlerIndex;
-        }
-        return this.currentHandlerIndex = n;
-    };
-    return Context;
-}());
-exports.Context = Context;
-var Route = /** @class */ (function () {
-    function Route(handlers) {
-        if (handlers === void 0) { handlers = []; }
-        this.handlers = handlers;
-    }
-    Route.prototype.join = function () {
-        var handlers = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            handlers[_i] = arguments[_i];
-        }
-        (_a = this.handlers).push.apply(_a, handlers);
-        var _a;
-    };
-    return Route;
-}());
-exports.Route = Route;
-var Router = /** @class */ (function () {
-    function Router(m) {
-        if (m === void 0) { m = {}; }
-        this.m = m;
-    }
-    Router.prototype.handle = function (key) {
-        var handlers = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            handlers[_i - 1] = arguments[_i];
-        }
-        if (this.m[key] == null) {
-            this.m[key] = new Route(handlers.slice());
-        }
-        (_a = this.m[key]).join.apply(_a, handlers);
-        var _a;
-    };
-    Router.prototype.serve = function (key, ctx) {
-        var route = this.m[key];
-        if (route == null) {
-            return;
-        }
-        ctx.handlers = route.handlers;
-        Next(ctx);
-    };
-    Router.prototype.run = function () {
-    };
-    return Router;
-}());
-exports.Router = Router;
-
+const GetWhiteList = function () {
+    return new Promise((rs, rj) => {
+        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
+            rs(resp)
+        })
+    })
+};
 
 /***/ })
 /******/ ]);

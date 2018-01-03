@@ -18,6 +18,10 @@
   version "0.0.28"
   resolved "http://registry.npm.taobao.org/@types/filewriter/download/@types/filewriter-0.0.28.tgz#c054e8af4d9dd75db4e63abc76f885168714d4b3"
 
+"@types/zepto@^1.0.29":
+  version "1.0.29"
+  resolved "http://registry.npm.taobao.org/@types/zepto/download/@types/zepto-1.0.29.tgz#a75fc6d4aa624e1de94b9cdf5d487d16eecec895"
+
 abbrev@1:
   version "1.1.1"
   resolved "http://registry.npm.taobao.org/abbrev/download/abbrev-1.1.1.tgz#f8f2c887ad10bf67f634f005b6987fed3179aac8"

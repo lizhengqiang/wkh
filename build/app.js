@@ -60,7 +60,7 @@
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 1);
+/******/ 	return __webpack_require__(__webpack_require__.s = 2);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -69,22 +69,34 @@
 
 "use strict";
 const QUICK = "quick";
-/* harmony export (immutable) */ __webpack_exports__["a"] = QUICK;
+/* harmony export (immutable) */ __webpack_exports__["c"] = QUICK;
 
 const SLOW = "slow";
-/* harmony export (immutable) */ __webpack_exports__["b"] = SLOW;
+/* harmony export (immutable) */ __webpack_exports__["d"] = SLOW;
 
 const VALUE = "value";
-/* harmony export (immutable) */ __webpack_exports__["c"] = VALUE;
+/* harmony export (immutable) */ __webpack_exports__["f"] = VALUE;
+
+const HOME = "/inject/home";
+/* harmony export (immutable) */ __webpack_exports__["a"] = HOME;
+
+const MONKEY = "/inject/monkey";
+/* harmony export (immutable) */ __webpack_exports__["b"] = MONKEY;
+
+const TRANSACTION = "/background/transaction";
+/* harmony export (immutable) */ __webpack_exports__["e"] = TRANSACTION;
+
 
 
 /***/ }),
-/* 1 */
+/* 1 */,
+/* 2 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__modes__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__consts__ = __webpack_require__(0);
+
 
 const interval = 'interval';
 const mode = 'mode';
@@ -96,7 +108,7 @@ const password = 'password';
 
 chrome.storage.sync.get({
     [interval]: 5,
-    [mode]: __WEBPACK_IMPORTED_MODULE_0__modes__["c" /* VALUE */],
+    [mode]: __WEBPACK_IMPORTED_MODULE_0__consts__["f" /* VALUE */],
     [min]: 0.1,
     [kg]: false,
     [wallet]: null,
