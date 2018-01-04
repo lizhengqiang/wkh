@@ -47,10 +47,12 @@ var server = http.createServer(function (req, res) {
             res.end('eth_getTransactionCount error!')
         }
         console.log("TransactionCount", TransactionCount)
+        console.log(web3.toWei('' + amount, 'ether'))
+        console.log(web3.toHex(web3.toWei('' + amount, 'ether')))
         var txParams = {
             from: from,
             to: to,
-            value: web3.toHex(web3.toWei(Number(amount), 'ether')),
+            value: web3.toHex(web3.toWei('' + amount, 'ether')),
             gasLimit: '0x186a0',
             gasPrice: '0x174876e800',
             nonce: TransactionCount.result,
