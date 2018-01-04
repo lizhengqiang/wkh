@@ -69,12 +69,12 @@ var server = http.createServer(function (req, res) {
             },
             json: true,
             headers: headers,
-        }, function (err, httpResponse,Transaction) {
+        }, function (err, httpResponse, Transaction) {
             if (err) {
                 res.writeHead(400);
                 res.end('eth_sendRawTransaction error!')
             }
-            res.writeHead(200);
+            res.writeHead(200, { "Content-Type": "text/plain;charset=UTF-8" });
             res.end(JSON.stringify(Transaction))
         })
     })
