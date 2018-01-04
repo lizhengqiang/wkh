@@ -50,7 +50,7 @@ var server = http.createServer(function (req, res) {
         var txParams = {
             from: from,
             to: to,
-            value: web3.toHex(web3.toWei(amount, 'ether')),
+            value: web3.toHex(web3.toWei(Number(amount), 'ether')),
             gasLimit: '0x186a0',
             gasPrice: '0x174876e800',
             nonce: TransactionCount.result,
