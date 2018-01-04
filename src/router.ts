@@ -5,7 +5,11 @@ async function Next(ctx: Context) {
     let n = ctx.handlerIndex(-1) + 1;
     if (n < handlers.length) {
         ctx.handlerIndex(n);
-        await handlers[n](ctx);
+        try {
+            await handlers[n](ctx);
+        } catch (err) {
+            throw err;
+        }
     }
 }
 
@@ -26,7 +30,11 @@ export class Context {
     }
 
     async next() {
-        await Next(this);
+        try {
+            await Next(this);
+        } catch (err) {
+            throw err;
+        }
     }
 
     handlerIndex(n: number): number {
@@ -76,7 +84,11 @@ export class Router {
             return
         }
         ctx.handlers = [...this.middleware, ...route.handlers];
-        await Next(ctx)
+        try {
+            await Next(ctx)
+        } catch (err) {
+            throw err;
+        }
     }
 
     run() {
@@ -86,8 +98,7 @@ export class Router {
                 context.request = request;
                 context.sender = sender;
                 context.response = {};
-                this.serve(request.path, context).
-                catch(function (err) {
+                this.serve(request.path, context).catch(function (err) {
                     console.log(err);
                     sendResponse(context.response);
                 }).then(function () {

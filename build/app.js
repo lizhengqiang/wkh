@@ -152,4 +152,3 @@ $("#like").click(function () {
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=app.js.map

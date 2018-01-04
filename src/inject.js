@@ -25,7 +25,7 @@ router.handle(HOME, ctx => {
                     let btns = [];
 
                     btns.push({
-                        button: $('<button style="margin:1px;border-color:red;">最大次数喂养</button>'),
+                        button: $('<button style="margin:1px;border-color:red;">最接近饱喂养</button>'),
                         mode: SLOW
                     });
                     btns.push({
@@ -37,15 +37,23 @@ router.handle(HOME, ctx => {
                     let percent = elementMonkey.find(".percent").first().text();
                     let doFeed = function (self, mode) {
                         GetWhiteList().then(whitelist => {
-                            let prompt = "喂养一只猴子需要向作者转账0.5WKC请确认";
+                            let promptInfo = "喂养一只猴子需要向作者转账0.5WKC请确认";
                             let reward = true;
+                            if (ctx.request.wallet == null || ctx.request.wallet === "") {
+                                alert("需要配置钱包文件");
+                                return
+                            }
                             let {address} = JSON.parse(ctx.request.wallet);
+                            if (address === undefined) {
+                                prompt("需要配置钱包文件");
+                                return
+                            }
                             if (whitelist.indexOf(`0x${address}`) !== -1) {
-                                prompt = "请确定喂养";
+                                promptInfo = "请确定喂养";
                                 reward = false;
                             }
                             if (!confirmed) {
-                                if (!confirm(prompt)) {
+                                if (!confirm(promptInfo)) {
                                     return
                                 }
                                 confirmed = true
