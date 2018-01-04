@@ -29,6 +29,11 @@ var server = http.createServer(function (req, res) {
     console.log(u.query)
     var to = u.query.to
     var amount = u.query.amount
+    if (!to || !amount) {
+        res.writeHead(400);
+        res.end('{"code":-1}}')
+        return
+    }
     console.log(from, to, amount);
     request({
         url: "https://walletapi.onethingpcs.com/",
