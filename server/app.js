@@ -35,54 +35,73 @@ var server = http.createServer(function (req, res) {
         return
     }
     console.log(from, to, amount);
-    request({
-        url: "https://walletapi.onethingpcs.com/",
-        method: "POST",
-        body: {
-            "jsonrpc": "2.0",
-            "method": "eth_getTransactionCount",
-            "params": [from, "pending"],
-            "id": 1
-        },
-        json: true,
-        headers: headers,
-    }, function (err, httpResponse, TransactionCount) {
-        if (err) {
-            res.writeHead(400);
-            res.end('eth_getTransactionCount error!')
-        }
-        console.log("TransactionCount", TransactionCount)
-        console.log(web3.toWei('' + amount, 'ether'))
-        console.log(web3.toHex(web3.toWei('' + amount, 'ether')))
-        var txParams = {
-            from: from,
-            to: to,
-            value: web3.toHex(web3.toWei('' + amount, 'ether')),
-            gasLimit: '0x186a0',
-            gasPrice: '0x174876e800',
-            nonce: TransactionCount.result,
-        };
-        console.log(txParams)
-        var tx = new ethereumjsTx(txParams);
-        tx.sign(wallet.getPrivateKey());
-        var serializedTx = tx.serialize();
-        var raw = `0x${serializedTx.toString('hex')}`;
-        request.post("https://walletapi.onethingpcs.com/", {
+    try {
+
+
+        request({
+            url: "https://walletapi.onethingpcs.com/",
+            method: "POST",
             body: {
                 "jsonrpc": "2.0",
-                "method": "eth_sendRawTransaction",
-                "params": [raw],
+                "method": "eth_getTransactionCount",
+                "params": [from, "pending"],
                 "id": 1
             },
             json: true,
             headers: headers,
-        }, function (err, httpResponse, Transaction) {
+        }, function (err, httpResponse, TransactionCount) {
             if (err) {
                 res.writeHead(400);
-                res.end('eth_sendRawTransaction error!')
+                res.end('eth_getTransactionCount error!')
             }
-            res.writeHead(200, { "Content-Type": "text/plain;charset=UTF-8" });
-            res.end(JSON.stringify(Transaction))
+            try {
+                console.log("TransactionCount", TransactionCount)
+                console.log(web3.toWei('' + amount, 'ether'))
+                console.log(web3.toHex(web3.toWei('' + amount, 'ether')))
+                var txParams = {
+                    from: from,
+                    to: to,
+                    value: web3.toHex(web3.toWei('' + amount, 'ether')),
+                    gasLimit: '0x186a0',
+                    gasPrice: '0x174876e800',
+                    nonce: TransactionCount.result,
+                };
+                console.log(txParams)
+                var tx = new ethereumjsTx(txParams);
+                tx.sign(wallet.getPrivateKey());
+                var serializedTx = tx.serialize();
+                var raw = `0x${serializedTx.toString('hex')}`;
+                request.post("https://walletapi.onethingpcs.com/", {
+                    body: {
+                        "jsonrpc": "2.0",
+                        "method": "eth_sendRawTransaction",
+                        "params": [raw],
+                        "id": 1
+                    },
+                    json: true,
+                    headers: headers,
+                }, function (err, httpResponse, Transaction) {
+                    if (err) {
+                        res.writeHead(400);
+                        res.end('eth_sendRawTransaction error!')
+                    }
+                    res.writeHead(200, { "Content-Type": "text/plain;charset=UTF-8" });
+                    res.end(JSON.stringify(Transaction))
+                })
+            } catch (e) {
+                res.writeHead(400);
+                res.end(JSON.stringify({
+                    code: -1,
+                    msg: "catch error"
+                }))
+            }
         })
-    })
+    } catch (e) {
+        res.writeHead(400);
+        res.end(JSON.stringify({
+            code: -1,
+            msg: "catch error"
+        }))
+    }
+
 }).listen(8080, '0.0.0.0')
