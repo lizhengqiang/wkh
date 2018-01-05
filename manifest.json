@@ -37,12 +37,10 @@
     ],
     "background": {
         "scripts": [
-            "public/web3.min.js",
-            "public/ethereumjs-tx-1.3.3.min.js",
-            "public/ethereumjs-wallet-0.6.0.js",
             "public/zepto.min.js",
             "build/background.js"
         ],
         "persistent": true
-    }
+    },
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'"
 }

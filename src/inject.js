@@ -1,5 +1,5 @@
 import { Router } from './router.ts';
-import { HOME, MONKEY, SLOW, QUICK, TRANSACTION, VALUE } from './consts.ts';
+import { HOME, MONKEY, FULL, SLOW, QUICK, TRANSACTION, VALUE } from './consts.ts';
 
 
 const MONKEYS = "monkeys";
@@ -26,6 +26,10 @@ router.handle(HOME, ctx => {
 
                     btns.push({
                         button: $('<button style="margin:1px;border-color:red;">最接近饱喂养</button>'),
+                        mode: FULL
+                    });
+                    btns.push({
+                        button: $('<button style="margin:1px;border-color:red;">最大次数喂养</button>'),
                         mode: SLOW
                     });
                     btns.push({

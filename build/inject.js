@@ -60,36 +60,191 @@
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 3);
+/******/ 	return __webpack_require__(__webpack_require__.s = 110);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 110:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__router_ts__ = __webpack_require__(37);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__consts_ts__ = __webpack_require__(23);
+
+
+
+
+const MONKEYS = "monkeys";
+const ITEM = "item";
+
+console.log("注入页面");
+let confirmed = false;
+
+const router = new __WEBPACK_IMPORTED_MODULE_0__router_ts__["a" /* Router */]();
+router.use(ctx => {
+    console.log("页面发生变化");
+    ctx.next();
+});
+
+// monkeys
+router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
+    return new Promise((resolve, reject) => {
+        $("div").forEach(element => {
+            let element$ = $(element);
+
+            if (element$.hasClass(MONKEYS)) {
+                element$.find(".panel").forEach(monkey => {
+                    let btns = [];
+
+                    btns.push({
+                        button: $('<button style="margin:1px;border-color:red;">最接近饱喂养</button>'),
+                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["a" /* FULL */]
+                    });
+                    btns.push({
+                        button: $('<button style="margin:1px;border-color:red;">最大次数喂养</button>'),
+                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["e" /* SLOW */]
+                    });
+                    btns.push({
+                        button: $('<button style="margin:1px;border-color:red;">最少次数喂养</button>'),
+                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["d" /* QUICK */]
+                    });
+                    console.log(monkey);
+                    let elementMonkey = $(monkey);
+                    let percent = elementMonkey.find(".percent").first().text();
+                    let doFeed = function (self, mode) {
+                        GetWhiteList().then(whitelist => {
+                            let promptInfo = "喂养一只猴子需要向作者转账0.5WKC请确认";
+                            let reward = true;
+                            if (ctx.request.wallet == null || ctx.request.wallet === "") {
+                                alert("需要配置钱包文件");
+                                return
+                            }
+                            let {address} = JSON.parse(ctx.request.wallet);
+                            if (address === undefined) {
+                                prompt("需要配置钱包文件");
+                                return
+                            }
+                            if (whitelist.indexOf(`0x${address}`) !== -1) {
+                                promptInfo = "请确定喂养";
+                                reward = false;
+                            }
+                            if (!confirmed) {
+                                if (!confirm(promptInfo)) {
+                                    return
+                                }
+                                confirmed = true
+                            }
+                            btns.forEach(btn => {
+                                btn.button.hide()
+                            });
+                            chrome.runtime.sendMessage({
+                                path: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["f" /* TRANSACTION */],
+                                id: elementMonkey.find(".id").first().text().split(' ')[1],
+                                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
+                                mode: mode,
+                                reward: reward,
+                            }, function (response) {
+                                console.log(response);
+                            });
+                        });
+                    };
+                    btns.forEach(btn => {
+                        btn.button.click(function () {
+                            doFeed($(this), btn.mode);
+                        });
+                    });
+                    console.log("has button", elementMonkey.has("button").length);
+                    if (elementMonkey.find("button").length === 0) {
+                        btns.forEach(btn => {
+                            elementMonkey.append(btn.button);
+                        });
+                    }
+                })
+            }
+        });
+        resolve();
+    });
+});
+//items
+router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* MONKEY */], ctx => {
+    return new Promise((resolve, reject) => {
+        $("div").forEach(element => {
+            let element$ = $(element);
+
+            if (element$.hasClass(ITEM)) {
+                let info = $(element$.find(".info p").get(1)).text();
+                let priceDiv = element$.find(".price span").first();
+                let price = $(element$.find(".price span").get(0)).text();
+                if (!info || !priceDiv || !price) {
+                    return
+                }
+                let kg = info.split('·')[1].split(' ')[0];
+                let arg1 = info.split('·')[0].split('/')[0];
+                let arg2 = info.split('·')[0].split('/')[1];
+                let arg3 = info.split('·')[0].split('/')[2];
+                let wkc = price.split(' ')[0];
+                let span = $(element$.find(".price").find(".price span").get(0));
+                if (span.text().indexOf(";") !== -1) {
+                    wkc = span.text().split(';')[0]
+                }
+                let request = ctx.request;
+                console.log(request.mode, request.min);
+                let mark = arg1 * arg3 * (request.kg === "true" ? kg : 1);
+                let showMark = request.mode === __WEBPACK_IMPORTED_MODULE_1__consts_ts__["g" /* VALUE */] ? mark : mark / wkc;
+                span.text(wkc + ";" + (showMark).toFixed(5));
+                if (showMark >= request.min) {
+                    element$.prop("style", "background:#F00;")
+                }
+            }
+        });
+        resolve();
+    });
+});
+
+router.run();
+
+const GetWhiteList = function () {
+    return new Promise((rs, rj) => {
+        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
+            rs(resp)
+        })
+    })
+};
+
+/***/ }),
+
+/***/ 23:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 const QUICK = "quick";
-/* harmony export (immutable) */ __webpack_exports__["c"] = QUICK;
+/* harmony export (immutable) */ __webpack_exports__["d"] = QUICK;
 
 const SLOW = "slow";
-/* harmony export (immutable) */ __webpack_exports__["d"] = SLOW;
+/* harmony export (immutable) */ __webpack_exports__["e"] = SLOW;
+
+const FULL = "full";
+/* harmony export (immutable) */ __webpack_exports__["a"] = FULL;
 
 const VALUE = "value";
-/* harmony export (immutable) */ __webpack_exports__["f"] = VALUE;
+/* harmony export (immutable) */ __webpack_exports__["g"] = VALUE;
 
 const HOME = "/inject/home";
-/* harmony export (immutable) */ __webpack_exports__["a"] = HOME;
+/* harmony export (immutable) */ __webpack_exports__["b"] = HOME;
 
 const MONKEY = "/inject/monkey";
-/* harmony export (immutable) */ __webpack_exports__["b"] = MONKEY;
+/* harmony export (immutable) */ __webpack_exports__["c"] = MONKEY;
 
 const TRANSACTION = "/background/transaction";
-/* harmony export (immutable) */ __webpack_exports__["e"] = TRANSACTION;
+/* harmony export (immutable) */ __webpack_exports__["f"] = TRANSACTION;
 
 
 
 /***/ }),
-/* 1 */
+
+/***/ 37:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -199,151 +354,6 @@ class Router {
 
 
 
-/***/ }),
-/* 2 */,
-/* 3 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__router_ts__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__consts_ts__ = __webpack_require__(0);
-
-
-
-
-const MONKEYS = "monkeys";
-const ITEM = "item";
-
-console.log("注入页面");
-let confirmed = false;
-
-const router = new __WEBPACK_IMPORTED_MODULE_0__router_ts__["a" /* Router */]();
-router.use(ctx => {
-    console.log("页面发生变化");
-    ctx.next();
-});
-
-// monkeys
-router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["a" /* HOME */], ctx => {
-    return new Promise((resolve, reject) => {
-        $("div").forEach(element => {
-            let element$ = $(element);
-
-            if (element$.hasClass(MONKEYS)) {
-                element$.find(".panel").forEach(monkey => {
-                    let btns = [];
-
-                    btns.push({
-                        button: $('<button style="margin:1px;border-color:red;">最接近饱喂养</button>'),
-                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["d" /* SLOW */]
-                    });
-                    btns.push({
-                        button: $('<button style="margin:1px;border-color:red;">最少次数喂养</button>'),
-                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* QUICK */]
-                    });
-                    console.log(monkey);
-                    let elementMonkey = $(monkey);
-                    let percent = elementMonkey.find(".percent").first().text();
-                    let doFeed = function (self, mode) {
-                        GetWhiteList().then(whitelist => {
-                            let promptInfo = "喂养一只猴子需要向作者转账0.5WKC请确认";
-                            let reward = true;
-                            if (ctx.request.wallet == null || ctx.request.wallet === "") {
-                                alert("需要配置钱包文件");
-                                return
-                            }
-                            let {address} = JSON.parse(ctx.request.wallet);
-                            if (address === undefined) {
-                                prompt("需要配置钱包文件");
-                                return
-                            }
-                            if (whitelist.indexOf(`0x${address}`) !== -1) {
-                                promptInfo = "请确定喂养";
-                                reward = false;
-                            }
-                            if (!confirmed) {
-                                if (!confirm(promptInfo)) {
-                                    return
-                                }
-                                confirmed = true
-                            }
-                            btns.forEach(btn => {
-                                btn.button.hide()
-                            });
-                            chrome.runtime.sendMessage({
-                                path: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["e" /* TRANSACTION */],
-                                id: elementMonkey.find(".id").first().text().split(' ')[1],
-                                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
-                                mode: mode,
-                                reward: reward,
-                            }, function (response) {
-                                console.log(response);
-                            });
-                        });
-                    };
-                    btns.forEach(btn => {
-                        btn.button.click(function () {
-                            doFeed($(this), btn.mode);
-                        });
-                    });
-                    console.log("has button", elementMonkey.has("button").length);
-                    if (elementMonkey.find("button").length === 0) {
-                        btns.forEach(btn => {
-                            elementMonkey.append(btn.button);
-                        });
-                    }
-                })
-            }
-        });
-        resolve();
-    });
-});
-//items
-router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* MONKEY */], ctx => {
-    return new Promise((resolve, reject) => {
-        $("div").forEach(element => {
-            let element$ = $(element);
-
-            if (element$.hasClass(ITEM)) {
-                let info = $(element$.find(".info p").get(1)).text();
-                let priceDiv = element$.find(".price span").first();
-                let price = $(element$.find(".price span").get(0)).text();
-                if (!info || !priceDiv || !price) {
-                    return
-                }
-                let kg = info.split('·')[1].split(' ')[0];
-                let arg1 = info.split('·')[0].split('/')[0];
-                let arg2 = info.split('·')[0].split('/')[1];
-                let arg3 = info.split('·')[0].split('/')[2];
-                let wkc = price.split(' ')[0];
-                let span = $(element$.find(".price").find(".price span").get(0));
-                if (span.text().indexOf(";") !== -1) {
-                    wkc = span.text().split(';')[0]
-                }
-                let request = ctx.request;
-                console.log(request.mode, request.min);
-                let mark = arg1 * arg3 * (request.kg === "true" ? kg : 1);
-                let showMark = request.mode === __WEBPACK_IMPORTED_MODULE_1__consts_ts__["f" /* VALUE */] ? mark : mark / wkc;
-                span.text(wkc + ";" + (showMark).toFixed(5));
-                if (showMark >= request.min) {
-                    element$.prop("style", "background:#F00;")
-                }
-            }
-        });
-        resolve();
-    });
-});
-
-router.run();
-
-const GetWhiteList = function () {
-    return new Promise((rs, rj) => {
-        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
-            rs(resp)
-        })
-    })
-};
-
 /***/ })
-/******/ ]);
+
+/******/ });

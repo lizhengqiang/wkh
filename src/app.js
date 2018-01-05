@@ -1,4 +1,4 @@
-import {VALUE} from "./consts";
+import { VALUE } from "./consts";
 
 const interval = 'interval';
 const mode = 'mode';
