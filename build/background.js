@@ -9678,8 +9678,8 @@ const VALUE = "value";
 const HOME = "/inject/home";
 /* harmony export (immutable) */ __webpack_exports__["b"] = HOME;
 
-const MONKEY = "/inject/monkey";
-/* harmony export (immutable) */ __webpack_exports__["c"] = MONKEY;
+const MARKET = "/inject/market";
+/* harmony export (immutable) */ __webpack_exports__["c"] = MARKET;
 
 const TRANSACTION = "/background/transaction";
 /* harmony export (immutable) */ __webpack_exports__["f"] = TRANSACTION;
@@ -10767,8 +10767,8 @@ class Router {
             context.sender = sender;
             context.response = {};
             this.serve(request.path, context).catch(function (err) {
-                console.log(err);
                 sendResponse(context.response);
+                throw err;
             }).then(function () {
                 sendResponse(context.response);
             });
@@ -29699,8 +29699,8 @@ chrome.webRequest.onCompleted.addListener(
                 let path = null;
                 if (tab.url === "http://h.miguan.in/home") {
                     path = __WEBPACK_IMPORTED_MODULE_3__consts__["b" /* HOME */];
-                } else if (tab.url.indexOf("http://h.miguan.in/monkey") !== -1) {
-                    path = __WEBPACK_IMPORTED_MODULE_3__consts__["c" /* MONKEY */];
+                } else if (tab.url.indexOf("http://h.miguan.in/market") !== -1) {
+                    path = __WEBPACK_IMPORTED_MODULE_3__consts__["c" /* MARKET */];
                 } else {
                     return
                 }

@@ -88,6 +88,16 @@ router.use(ctx => {
     ctx.next();
 });
 
+const generationFactor = (() => {
+    const generationFactorDict = {};
+    return (n) => {
+        if (generationFactorDict[n] === undefined) {
+            generationFactorDict[n] = 1.168 ** Number(n)
+        }
+        return generationFactorDict[n];
+    }
+})();
+
 // monkeys
 router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
     return new Promise((resolve, reject) => {
@@ -95,7 +105,10 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
             let element$ = $(element);
 
             if (element$.hasClass(MONKEYS)) {
+                // 掘金分数
                 element$.find(".panel").forEach(monkey => {
+                    let elementMonkey = $(monkey);
+
                     let btns = [];
 
                     btns.push({
@@ -110,8 +123,6 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
                         button: $('<button style="margin:1px;border-color:red;">最少次数喂养</button>'),
                         mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["d" /* QUICK */]
                     });
-                    console.log(monkey);
-                    let elementMonkey = $(monkey);
                     let percent = elementMonkey.find(".percent").first().text();
                     let doFeed = function (self, mode) {
                         GetWhiteList().then(whitelist => {
@@ -155,7 +166,6 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
                             doFeed($(this), btn.mode);
                         });
                     });
-                    console.log("has button", elementMonkey.has("button").length);
                     if (elementMonkey.find("button").length === 0) {
                         btns.forEach(btn => {
                             elementMonkey.append(btn.button);
@@ -167,8 +177,8 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
         resolve();
     });
 });
-//items
-router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* MONKEY */], ctx => {
+//market
+router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* MARKET */], ctx => {
     return new Promise((resolve, reject) => {
         $("div").forEach(element => {
             let element$ = $(element);
@@ -177,25 +187,23 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* MONKEY */], ctx =>
                 let info = $(element$.find(".info p").get(1)).text();
                 let priceDiv = element$.find(".price span").first();
                 let price = $(element$.find(".price span").get(0)).text();
-                if (!info || !priceDiv || !price) {
+                let gen = element$.find(".gen").text().replace("代", "");
+                if (!info || !priceDiv || !price || !gen) {
                     return
                 }
-                let kg = info.split('·')[1].split(' ')[0];
-                let arg1 = info.split('·')[0].split('/')[0];
-                let arg2 = info.split('·')[0].split('/')[1];
-                let arg3 = info.split('·')[0].split('/')[2];
+                let weight = info.split('•')[1].split(' ')[0].replace("kg", "");
+                let digValue = info.split('•')[0].split('/')[2];
                 let wkc = price.split(' ')[0];
                 let span = $(element$.find(".price").find(".price span").get(0));
                 if (span.text().indexOf(";") !== -1) {
                     wkc = span.text().split(';')[0]
                 }
                 let request = ctx.request;
-                console.log(request.mode, request.min);
-                let mark = arg1 * arg3 * (request.kg === "true" ? kg : 1);
-                let showMark = request.mode === __WEBPACK_IMPORTED_MODULE_1__consts_ts__["g" /* VALUE */] ? mark : mark / wkc;
-                span.text(wkc + ";" + (showMark).toFixed(5));
+                let mark = Number(digValue) * (request.kg === "true" ? Number(weight) : 1) / generationFactor(gen);
+                let showMark = request.mode === __WEBPACK_IMPORTED_MODULE_1__consts_ts__["g" /* VALUE */] ? mark : mark / Number(wkc);
+                span.text(`${wkc} 掘金价值:${(showMark).toFixed(5)}`);
                 if (showMark >= request.min) {
-                    element$.prop("style", "background:#F00;")
+                    element$.prop("style", "background:rgb(201,199,157);")
                 }
             }
         });
@@ -211,6 +219,42 @@ const GetWhiteList = function () {
             rs(resp)
         })
     })
+};
+
+const showScore = function (element$) {
+    const lis = element$.find(".minfo li");
+    if (lis.length === 0) {
+        return
+    }
+    const rowOne = $(lis[0]);
+    const showPosition = rowOne.text();
+    if (showPosition.indexOf("掘金分数") !== -1) {
+        return
+    }
+    let words = /(\d+) .*?([\d.]+)/.exec(showPosition);
+    if (words === null) {
+        console.log("匹配不到 代数 和 体重");
+        return
+    }
+    const ps = element$.find(".info p");
+    if (ps.length < 2) {
+        console.log("找不到猴子 属性");
+        return
+    }
+    const params = ps.text().split("/");
+    if (params.length < 3) {
+        console.log("猴子属性拆分错误");
+        return
+    }
+    const percents = element$.find(".percent").text().split("/");
+    console.log(percents);
+    if (percents.length < 2) {
+        console.log("找不到投食进度");
+        return
+    }
+    console.log(Number(words[2]), Number(params[2]), Number(percents[0]), generationFactor(words[1]));
+    const score = Number(words[2]) * Number(params[2]) * Number(percents[0]) / generationFactor(words[1]);
+    rowOne.text(`${showPosition} 掘金分数${score === 0 ? 0 : score.toFixed(5)}`);
 };
 
 /***/ }),
@@ -234,8 +278,8 @@ const VALUE = "value";
 const HOME = "/inject/home";
 /* harmony export (immutable) */ __webpack_exports__["b"] = HOME;
 
-const MONKEY = "/inject/monkey";
-/* harmony export (immutable) */ __webpack_exports__["c"] = MONKEY;
+const MARKET = "/inject/market";
+/* harmony export (immutable) */ __webpack_exports__["c"] = MARKET;
 
 const TRANSACTION = "/background/transaction";
 /* harmony export (immutable) */ __webpack_exports__["f"] = TRANSACTION;
@@ -342,8 +386,8 @@ class Router {
             context.sender = sender;
             context.response = {};
             this.serve(request.path, context).catch(function (err) {
-                console.log(err);
                 sendResponse(context.response);
+                throw err;
             }).then(function () {
                 sendResponse(context.response);
             });

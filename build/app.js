@@ -82,18 +82,18 @@ const to_address = 'to_address';
 const password = 'password';
 
 chrome.storage.sync.get({
-    [interval]: 5,
     [mode]: __WEBPACK_IMPORTED_MODULE_0__consts__["g" /* VALUE */],
     [min]: 0.1,
     [kg]: false,
+    [interval]: 5,
     [wallet]: null,
     [to_address]: null,
     [password]: null,
 }, function (result) {
-    $("#interval").val(result.interval);
     $("#mode").val(result.mode);
     $("#min").val(result.min);
     $("#kg").val(result.kg);
+    $("#interval").val(result.interval);
     $("#wallet").val(result.wallet);
     $("#to_address").val(result.to_address);
     $("#password").val(result.password);
@@ -146,8 +146,8 @@ const VALUE = "value";
 const HOME = "/inject/home";
 /* harmony export (immutable) */ __webpack_exports__["b"] = HOME;
 
-const MONKEY = "/inject/monkey";
-/* harmony export (immutable) */ __webpack_exports__["c"] = MONKEY;
+const MARKET = "/inject/market";
+/* harmony export (immutable) */ __webpack_exports__["c"] = MARKET;
 
 const TRANSACTION = "/background/transaction";
 /* harmony export (immutable) */ __webpack_exports__["f"] = TRANSACTION;

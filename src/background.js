@@ -1,7 +1,7 @@
 import Web3 from "web3";
 import Transaction from "ethereumjs-tx";
 import Wallet from "ethereumjs-wallet";
-import { FULL, QUICK, SLOW, VALUE, HOME, MONKEY, TRANSACTION } from "./consts";
+import { FULL, QUICK, SLOW, VALUE, HOME, TRANSACTION, MARKET } from "./consts";
 import { SingleTransaction } from "./entity/transction";
 import { Router } from "./router";
 import { bestFeeding } from "./utils";
@@ -230,8 +230,8 @@ chrome.webRequest.onCompleted.addListener(
                 let path = null;
                 if (tab.url === "http://h.miguan.in/home") {
                     path = HOME;
-                } else if (tab.url.indexOf("http://h.miguan.in/monkey") !== -1) {
-                    path = MONKEY;
+                } else if (tab.url.indexOf("http://h.miguan.in/market") !== -1) {
+                    path = MARKET;
                 } else {
                     return
                 }

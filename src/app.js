@@ -9,18 +9,18 @@ const to_address = 'to_address';
 const password = 'password';
 
 chrome.storage.sync.get({
-    [interval]: 5,
     [mode]: VALUE,
     [min]: 0.1,
     [kg]: false,
+    [interval]: 5,
     [wallet]: null,
     [to_address]: null,
     [password]: null,
 }, function (result) {
-    $("#interval").val(result.interval);
     $("#mode").val(result.mode);
     $("#min").val(result.min);
     $("#kg").val(result.kg);
+    $("#interval").val(result.interval);
     $("#wallet").val(result.wallet);
     $("#to_address").val(result.to_address);
     $("#password").val(result.password);
