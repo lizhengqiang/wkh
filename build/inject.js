@@ -107,7 +107,12 @@ function Next(ctx) {
         let n = ctx.handlerIndex(-1) + 1;
         if (n < handlers.length) {
             ctx.handlerIndex(n);
-            yield handlers[n](ctx);
+            try {
+                yield handlers[n](ctx);
+            }
+            catch (err) {
+                throw err;
+            }
         }
     });
 }
@@ -119,7 +124,12 @@ class Context {
     }
     next() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield Next(this);
+            try {
+                yield Next(this);
+            }
+            catch (err) {
+                throw err;
+            }
         });
     }
     handlerIndex(n) {
@@ -162,7 +172,12 @@ class Router {
                 return;
             }
             ctx.handlers = [...this.middleware, ...route.handlers];
-            yield Next(ctx);
+            try {
+                yield Next(ctx);
+            }
+            catch (err) {
+                throw err;
+            }
         });
     }
     run() {
@@ -171,8 +186,7 @@ class Router {
             context.request = request;
             context.sender = sender;
             context.response = {};
-            this.serve(request.path, context).
-                catch(function (err) {
+            this.serve(request.path, context).catch(function (err) {
                 console.log(err);
                 sendResponse(context.response);
             }).then(function () {
@@ -221,7 +235,7 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["a" /* HOME */], ctx => {
                     let btns = [];
 
                     btns.push({
-                        button: $('<button style="margin:1px;border-color:red;">最大次数喂养</button>'),
+                        button: $('<button style="margin:1px;border-color:red;">最接近饱喂养</button>'),
                         mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["d" /* SLOW */]
                     });
                     btns.push({
@@ -233,15 +247,23 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["a" /* HOME */], ctx => {
                     let percent = elementMonkey.find(".percent").first().text();
                     let doFeed = function (self, mode) {
                         GetWhiteList().then(whitelist => {
-                            let prompt = "喂养一只猴子需要向作者转账0.5WKC请确认";
+                            let promptInfo = "喂养一只猴子需要向作者转账0.5WKC请确认";
                             let reward = true;
+                            if (ctx.request.wallet == null || ctx.request.wallet === "") {
+                                alert("需要配置钱包文件");
+                                return
+                            }
                             let {address} = JSON.parse(ctx.request.wallet);
+                            if (address === undefined) {
+                                prompt("需要配置钱包文件");
+                                return
+                            }
                             if (whitelist.indexOf(`0x${address}`) !== -1) {
-                                prompt = "请确定喂养";
+                                promptInfo = "请确定喂养";
                                 reward = false;
                             }
                             if (!confirmed) {
-                                if (!confirm(prompt)) {
+                                if (!confirm(promptInfo)) {
                                     return
                                 }
                                 confirmed = true
@@ -325,4 +347,3 @@ const GetWhiteList = function () {
 
 /***/ })
 /******/ ]);
-//# sourceMappingURL=inject.js.map

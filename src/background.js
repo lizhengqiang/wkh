@@ -1,5 +1,6 @@
-import { QUICK, VALUE, HOME, MONKEY, TRANSACTION } from "./consts";
+import { SLOW, QUICK, VALUE, HOME, MONKEY, TRANSACTION } from "./consts";
 import { Router } from "./router";
+import { bestFeeding } from "./utils";
 
 console.log("background");
 
@@ -37,7 +38,7 @@ const TransactionLooper = async function () {
 
 setTimeout(TransactionLooper);
 const SendTransaction = function (wallet, to, num) {
-    num = Number(num.toFixed(6));
+    num = Number(num);
     return new Promise((rs, rj) => {
         const from = `0x${wallet.getAddress().toString('hex')}`;
         console.log("from", from);
@@ -124,12 +125,12 @@ router.handle(TRANSACTION, ctx => {
             "wallet": null,
         }, function (result) {
             const wallet = ethereumjs.Wallet.fromV3(result.wallet, result.password);
-            const from = `0x${wallet.getAddress().toString('hex')}`;
             const {to_address} = result;
             const {mode, limit, id, reward} = request;
             let num = limit.toFixed(0);
             const idNum = Number(`0.${id}`);
             if (idNum > limit) {
+                resolve();
                 return
             }
             if (mode === QUICK) {
@@ -140,14 +141,14 @@ router.handle(TRANSACTION, ctx => {
                 }
                 const loop = async function () {
                     try {
-                        const Transaction = await PushTransaction(wallet, to_address, num);
+                        const Transaction = await PushTransaction(wallet, to_address, `${num | 0}.${idNum.toString().slice(2)}`);
                         console.log(Transaction);
 
-                        console.log("ID", id, "需要喂养", limit, ((limit - num) / idNum).toFixed(0) + "次");
+                        console.log(`ID: ${id} 需要喂养${limit} 共${((limit - num) / idNum).toFixed(0)}次`);
                         for (let i = num + idNum; i < limit; i += idNum) {
                             try {
-                                const Transacation = await PushTransaction(wallet, to_address, idNum);
-                                console.log(Transacation)
+                                const Transaction = await PushTransaction(wallet, to_address, idNum);
+                                console.log(Transaction)
                             } catch (err) {
                                 throw err
                             }
@@ -162,14 +163,15 @@ router.handle(TRANSACTION, ctx => {
                 }, () => {
                     reject();
                 });
-            } else {
-                console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次");
+            } else if (mode === SLOW) {
+                let c = bestFeeding(limit, idNum)[0];
+                console.log(`ID:${id} 需要喂养${limit} 共${c.list.length}次`);
                 const loop = async function () {
-                    for (let i = idNum; i < limit; i += idNum) {
+                    for (let i of c.list) {
                         try {
-                            console.log(idNum, i + "/" + limit);
-                            const Transacation = await PushTransaction(wallet, to_address, idNum);
-                            console.log(Transacation)
+                            console.log(i);
+                            const Transaction = await PushTransaction(wallet, to_address, i);
+                            console.log(Transaction)
                         } catch (err) {
                             throw err
                         }
@@ -181,6 +183,8 @@ router.handle(TRANSACTION, ctx => {
                 }, () => {
                     reject()
                 })
+            } else {
+                resolve()
             }
         })
     });

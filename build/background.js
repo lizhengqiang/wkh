@@ -107,7 +107,12 @@ function Next(ctx) {
         let n = ctx.handlerIndex(-1) + 1;
         if (n < handlers.length) {
             ctx.handlerIndex(n);
-            yield handlers[n](ctx);
+            try {
+                yield handlers[n](ctx);
+            }
+            catch (err) {
+                throw err;
+            }
         }
     });
 }
@@ -119,7 +124,12 @@ class Context {
     }
     next() {
         return __awaiter(this, void 0, void 0, function* () {
-            yield Next(this);
+            try {
+                yield Next(this);
+            }
+            catch (err) {
+                throw err;
+            }
         });
     }
     handlerIndex(n) {
@@ -162,7 +172,12 @@ class Router {
                 return;
             }
             ctx.handlers = [...this.middleware, ...route.handlers];
-            yield Next(ctx);
+            try {
+                yield Next(ctx);
+            }
+            catch (err) {
+                throw err;
+            }
         });
     }
     run() {
@@ -171,8 +186,7 @@ class Router {
             context.request = request;
             context.sender = sender;
             context.response = {};
-            this.serve(request.path, context).
-                catch(function (err) {
+            this.serve(request.path, context).catch(function (err) {
                 console.log(err);
                 sendResponse(context.response);
             }).then(function () {
@@ -195,6 +209,8 @@ class Router {
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__consts__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__router__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils__ = __webpack_require__(5);
+
 
 
 
@@ -234,7 +250,7 @@ const TransactionLooper = async function () {
 
 setTimeout(TransactionLooper);
 const SendTransaction = function (wallet, to, num) {
-    num = Number(num.toFixed(6));
+    num = Number(num);
     return new Promise((rs, rj) => {
         const from = `0x${wallet.getAddress().toString('hex')}`;
         console.log("from", from);
@@ -321,12 +337,12 @@ router.handle(__WEBPACK_IMPORTED_MODULE_0__consts__["e" /* TRANSACTION */], ctx 
             "wallet": null,
         }, function (result) {
             const wallet = ethereumjs.Wallet.fromV3(result.wallet, result.password);
-            const from = `0x${wallet.getAddress().toString('hex')}`;
             const {to_address} = result;
             const {mode, limit, id, reward} = request;
             let num = limit.toFixed(0);
             const idNum = Number(`0.${id}`);
             if (idNum > limit) {
+                resolve();
                 return
             }
             if (mode === __WEBPACK_IMPORTED_MODULE_0__consts__["c" /* QUICK */]) {
@@ -337,14 +353,14 @@ router.handle(__WEBPACK_IMPORTED_MODULE_0__consts__["e" /* TRANSACTION */], ctx 
                 }
                 const loop = async function () {
                     try {
-                        const Transaction = await PushTransaction(wallet, to_address, num);
+                        const Transaction = await PushTransaction(wallet, to_address, `${num | 0}.${idNum.toString().slice(2)}`);
                         console.log(Transaction);
 
-                        console.log("ID", id, "需要喂养", limit, ((limit - num) / idNum).toFixed(0) + "次");
+                        console.log(`ID: ${id} 需要喂养${limit} 共${((limit - num) / idNum).toFixed(0)}次`);
                         for (let i = num + idNum; i < limit; i += idNum) {
                             try {
-                                const Transacation = await PushTransaction(wallet, to_address, idNum);
-                                console.log(Transacation)
+                                const Transaction = await PushTransaction(wallet, to_address, idNum);
+                                console.log(Transaction)
                             } catch (err) {
                                 throw err
                             }
@@ -359,14 +375,15 @@ router.handle(__WEBPACK_IMPORTED_MODULE_0__consts__["e" /* TRANSACTION */], ctx 
                 }, () => {
                     reject();
                 });
-            } else {
-                console.log("ID", id, "需要喂养", limit, (limit / idNum).toFixed(0) + "次");
+            } else if (mode === __WEBPACK_IMPORTED_MODULE_0__consts__["d" /* SLOW */]) {
+                let c = Object(__WEBPACK_IMPORTED_MODULE_2__utils__["a" /* bestFeeding */])(limit, idNum)[0];
+                console.log(`ID:${id} 需要喂养${limit} 共${c.list.length}次`);
                 const loop = async function () {
-                    for (let i = idNum; i < limit; i += idNum) {
+                    for (let i of c.list) {
                         try {
-                            console.log(idNum, i + "/" + limit);
-                            const Transacation = await PushTransaction(wallet, to_address, idNum);
-                            console.log(Transacation)
+                            console.log(i);
+                            const Transaction = await PushTransaction(wallet, to_address, i);
+                            console.log(Transaction)
                         } catch (err) {
                             throw err
                         }
@@ -378,6 +395,8 @@ router.handle(__WEBPACK_IMPORTED_MODULE_0__consts__["e" /* TRANSACTION */], ctx 
                 }, () => {
                     reject()
                 })
+            } else {
+                resolve()
             }
         })
     });
@@ -419,6 +438,53 @@ chrome.webRequest.onCompleted.addListener(
     {urls: ["http://h.miguan.in/*", "http://api.h.miguan.in/*"]}
 );
 
+/***/ }),
+/* 5 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = bestFeeding;
+class Combination {
+    constructor(list = [], sum = 0) {
+        this.list = list;
+        this.sum = sum;
+    }
+}
+function bestFeeding(limit, base) {
+    let cs = [];
+    let naiveBestFeeding = (newBase, p) => {
+        for (let i = newBase; i < limit; i++) {
+            let sum = p.sum + i;
+            if (sum > limit) {
+                if (p.list.length == 0 || p.sum + base < limit) {
+                    return;
+                }
+                if (cs.length == 0 || cs[0].sum == p.sum) {
+                    cs.push(new Combination(p.list, p.sum));
+                }
+                else if (cs[0].sum < p.sum) {
+                    cs = [new Combination(p.list, p.sum)];
+                }
+                return;
+            }
+            let slice = p.list.slice();
+            slice.push(`${i | 0}.${base.toString().slice(2)}`);
+            naiveBestFeeding(i, new Combination(slice, sum));
+        }
+    };
+    naiveBestFeeding(base, new Combination());
+    cs.sort(((a, b) => {
+        if (a.list.length < b.list.length) {
+            return -1;
+        }
+        if (a.list.length > b.list.length) {
+            return 1;
+        }
+        return 0;
+    }));
+    return cs;
+}
+
+
 /***/ })
 /******/ ]);
-//# sourceMappingURL=background.js.map

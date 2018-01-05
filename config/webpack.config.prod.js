@@ -18,8 +18,6 @@ module.exports = {
         publicPath: publicPath,
     },
 
-    devtool: "source-map",
-
     resolve: {
         extensions: [".ts", ".js", ".json"]
     },
