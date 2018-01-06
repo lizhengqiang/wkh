@@ -99,8 +99,8 @@ export class Router {
                 context.sender = sender;
                 context.response = {};
                 this.serve(request.path, context).catch(function (err) {
-                    console.log(err);
                     sendResponse(context.response);
+                    throw err;
                 }).then(function () {
                     sendResponse(context.response)
                 });

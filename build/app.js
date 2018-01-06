@@ -60,42 +60,17 @@
 /******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 109);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
+/******/ ({
 
-"use strict";
-const QUICK = "quick";
-/* harmony export (immutable) */ __webpack_exports__["c"] = QUICK;
-
-const SLOW = "slow";
-/* harmony export (immutable) */ __webpack_exports__["d"] = SLOW;
-
-const VALUE = "value";
-/* harmony export (immutable) */ __webpack_exports__["f"] = VALUE;
-
-const HOME = "/inject/home";
-/* harmony export (immutable) */ __webpack_exports__["a"] = HOME;
-
-const MONKEY = "/inject/monkey";
-/* harmony export (immutable) */ __webpack_exports__["b"] = MONKEY;
-
-const TRANSACTION = "/background/transaction";
-/* harmony export (immutable) */ __webpack_exports__["e"] = TRANSACTION;
-
-
-
-/***/ }),
-/* 1 */,
-/* 2 */
+/***/ 109:
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__consts__ = __webpack_require__(0);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__consts__ = __webpack_require__(23);
 
 
 const interval = 'interval';
@@ -107,18 +82,18 @@ const to_address = 'to_address';
 const password = 'password';
 
 chrome.storage.sync.get({
-    [interval]: 5,
-    [mode]: __WEBPACK_IMPORTED_MODULE_0__consts__["f" /* VALUE */],
+    [mode]: __WEBPACK_IMPORTED_MODULE_0__consts__["g" /* VALUE */],
     [min]: 0.1,
     [kg]: false,
+    [interval]: 5,
     [wallet]: null,
     [to_address]: null,
     [password]: null,
 }, function (result) {
-    $("#interval").val(result.interval);
     $("#mode").val(result.mode);
     $("#min").val(result.min);
     $("#kg").val(result.kg);
+    $("#interval").val(result.interval);
     $("#wallet").val(result.wallet);
     $("#to_address").val(result.to_address);
     $("#password").val(result.password);
@@ -150,5 +125,35 @@ $("#like").click(function () {
     });
 });
 
+/***/ }),
+
+/***/ 23:
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+const QUICK = "quick";
+/* harmony export (immutable) */ __webpack_exports__["d"] = QUICK;
+
+const SLOW = "slow";
+/* harmony export (immutable) */ __webpack_exports__["e"] = SLOW;
+
+const FULL = "full";
+/* harmony export (immutable) */ __webpack_exports__["a"] = FULL;
+
+const VALUE = "value";
+/* harmony export (immutable) */ __webpack_exports__["g"] = VALUE;
+
+const HOME = "/inject/home";
+/* harmony export (immutable) */ __webpack_exports__["b"] = HOME;
+
+const MARKET = "/inject/market";
+/* harmony export (immutable) */ __webpack_exports__["c"] = MARKET;
+
+const TRANSACTION = "/background/transaction";
+/* harmony export (immutable) */ __webpack_exports__["f"] = TRANSACTION;
+
+
+
 /***/ })
-/******/ ]);
+
+/******/ });
