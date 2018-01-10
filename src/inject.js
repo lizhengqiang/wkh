@@ -1,6 +1,5 @@
 import { Router } from './router.ts';
-import { HOME, MARKET, FULL, SLOW, QUICK, TRANSACTION, VALUE } from './consts.ts';
-
+import { HOME, MARKET, FULL, SLOW, QUICK, TRANSACTION, VALUE, ALERT } from './consts.ts';
 
 const MONKEYS = "monkeys";
 const ITEM = "item";
@@ -24,6 +23,13 @@ const generationFactor = (() => {
     }
 })();
 
+router.handle(ALERT, ctx => {
+    return new Promise((resolve, reject) => {
+        alert(ctx.request.alert);
+        resolve();
+    });
+});
+
 // monkeys
 router.handle(HOME, ctx => {
     return new Promise((resolve, reject) => {
@@ -34,6 +40,7 @@ router.handle(HOME, ctx => {
                 // 掘金分数
                 element$.find(".panel").forEach(monkey => {
                     let elementMonkey = $(monkey);
+                    ShowScore(elementMonkey);
 
                     let btns = [];
 
@@ -51,40 +58,23 @@ router.handle(HOME, ctx => {
                     });
                     let percent = elementMonkey.find(".percent").first().text();
                     let doFeed = function (self, mode) {
-                        GetWhiteList().then(whitelist => {
-                            let promptInfo = "喂养一只猴子需要向作者转账0.5WKC请确认";
-                            let reward = true;
-                            if (ctx.request.wallet == null || ctx.request.wallet === "") {
-                                alert("需要配置钱包文件");
+                        let promptInfo = "请确定喂养";
+                        if (!confirmed) {
+                            if (!confirm(promptInfo)) {
                                 return
                             }
-                            let {address} = JSON.parse(ctx.request.wallet);
-                            if (address === undefined) {
-                                prompt("需要配置钱包文件");
-                                return
-                            }
-                            if (whitelist.indexOf(`0x${address}`) !== -1) {
-                                promptInfo = "请确定喂养";
-                                reward = false;
-                            }
-                            if (!confirmed) {
-                                if (!confirm(promptInfo)) {
-                                    return
-                                }
-                                confirmed = true
-                            }
-                            btns.forEach(btn => {
-                                btn.button.hide()
-                            });
-                            chrome.runtime.sendMessage({
-                                path: TRANSACTION,
-                                id: elementMonkey.find(".id").first().text().split(' ')[1],
-                                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
-                                mode: mode,
-                                reward: reward,
-                            }, function (response) {
-                                console.log(response);
-                            });
+                            confirmed = true
+                        }
+                        btns.forEach(btn => {
+                            btn.button.hide()
+                        });
+                        chrome.runtime.sendMessage({
+                            path: TRANSACTION,
+                            id: elementMonkey.find(".id").first().text().split(' ')[1],
+                            limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
+                            mode: mode,
+                        }, function (response) {
+                            console.log(response);
                         });
                     };
                     btns.forEach(btn => {
@@ -118,7 +108,7 @@ router.handle(MARKET, ctx => {
                     return
                 }
                 let weight = info.split('•')[1].split(' ')[0].replace("kg", "");
-                let digValue = info.split('•')[0].split('/')[2];
+                let digValue = info.split('•')[0].split('/')[1];
                 let wkc = price.split(' ')[0];
                 let span = $(element$.find(".price").find(".price span").get(0));
                 if (span.text().indexOf(";") !== -1) {
@@ -139,15 +129,7 @@ router.handle(MARKET, ctx => {
 
 router.run();
 
-const GetWhiteList = function () {
-    return new Promise((rs, rj) => {
-        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
-            rs(resp)
-        })
-    })
-};
-
-const showScore = function (element$) {
+const ShowScore = function (element$) {
     const lis = element$.find(".minfo li");
     if (lis.length === 0) {
         return
@@ -168,17 +150,19 @@ const showScore = function (element$) {
         return
     }
     const params = ps.text().split("/");
-    if (params.length < 3) {
+    if (params.length < 2) {
         console.log("猴子属性拆分错误");
         return
     }
     const percents = element$.find(".percent").text().split("/");
-    console.log(percents);
     if (percents.length < 2) {
         console.log("找不到投食进度");
         return
     }
-    console.log(Number(words[2]), Number(params[2]), Number(percents[0]), generationFactor(words[1]));
-    const score = Number(words[2]) * Number(params[2]) * Number(percents[0]) / generationFactor(words[1]);
+    const weight = words[2];
+    const generation = words[1];
+    const digValue = params[1];
+    const feeding = percents[0];
+    const score = Number(weight) * Number(digValue) * Number(feeding) / generationFactor(generation);
     rowOne.text(`${showPosition} 掘金分数${score === 0 ? 0 : score.toFixed(5)}`);
 };

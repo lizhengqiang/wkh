@@ -1,4 +1,4 @@
-import { VALUE } from "./consts";
+import { VALUE, REWARD } from "./consts";
 
 const interval = 'interval';
 const mode = 'mode';
@@ -46,7 +46,7 @@ $("#update").click(DoUpdate);
 $("#like").click(function () {
     DoUpdate();
     chrome.runtime.sendMessage({
-        to_address: "0x1889aea32bebda482440393d470246561a4e6ca6"
+        path: REWARD
     }, function (response) {
         console.log(response);
     });

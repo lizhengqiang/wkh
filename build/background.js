@@ -9664,25 +9664,31 @@ module.exports = Hash
 
 "use strict";
 const QUICK = "quick";
-/* harmony export (immutable) */ __webpack_exports__["d"] = QUICK;
+/* harmony export (immutable) */ __webpack_exports__["e"] = QUICK;
 
 const SLOW = "slow";
-/* harmony export (immutable) */ __webpack_exports__["e"] = SLOW;
+/* harmony export (immutable) */ __webpack_exports__["g"] = SLOW;
 
 const FULL = "full";
-/* harmony export (immutable) */ __webpack_exports__["a"] = FULL;
+/* harmony export (immutable) */ __webpack_exports__["b"] = FULL;
 
 const VALUE = "value";
-/* harmony export (immutable) */ __webpack_exports__["g"] = VALUE;
+/* harmony export (immutable) */ __webpack_exports__["i"] = VALUE;
 
 const HOME = "/inject/home";
-/* harmony export (immutable) */ __webpack_exports__["b"] = HOME;
+/* harmony export (immutable) */ __webpack_exports__["c"] = HOME;
 
 const MARKET = "/inject/market";
-/* harmony export (immutable) */ __webpack_exports__["c"] = MARKET;
+/* harmony export (immutable) */ __webpack_exports__["d"] = MARKET;
+
+const ALERT = "/inject/alert";
+/* harmony export (immutable) */ __webpack_exports__["a"] = ALERT;
 
 const TRANSACTION = "/background/transaction";
-/* harmony export (immutable) */ __webpack_exports__["f"] = TRANSACTION;
+/* harmony export (immutable) */ __webpack_exports__["h"] = TRANSACTION;
+
+const REWARD = "/background/reward";
+/* harmony export (immutable) */ __webpack_exports__["f"] = REWARD;
 
 
 
@@ -29479,6 +29485,164 @@ console.log("background");
 
 const web3 = new __WEBPACK_IMPORTED_MODULE_0_web3___default.a();
 const transactions = [];
+const router = new __WEBPACK_IMPORTED_MODULE_5__router__["a" /* Router */]();
+
+router.handle(__WEBPACK_IMPORTED_MODULE_3__consts__["h" /* TRANSACTION */], ctx => {
+    return new Promise((resolve, reject) => {
+        chrome.storage.sync.get({
+            "to_address": null,
+            "password": null,
+            "wallet": null,
+        }, function (result) {
+            const wallet = __WEBPACK_IMPORTED_MODULE_2_ethereumjs_wallet___default.a.fromV3(result.wallet, result.password);
+            const {to_address} = result;
+            let {request} = ctx;
+            const {mode, limit, id} = request;
+            let num = limit.toFixed(0);
+            const idNumStr = `0.${id}`;
+            const idNum = Number(idNumStr);
+            if (idNum > limit) {
+                resolve();
+                return
+            }
+            if (mode === __WEBPACK_IMPORTED_MODULE_3__consts__["e" /* QUICK */]) {
+                if (num + idNum > limit) {
+                    num = num - 1 + idNum
+                } else {
+                    num = num + idNum
+                }
+                const loop = async function () {
+                    try {
+                        const firstTransaction = await PushTransaction(wallet, to_address, `${num | 0}.${idNumStr.slice(2)}`);
+                        console.log(firstTransaction);
+
+                        console.log(`ID: ${id} 需要喂养${limit} 共${((limit - num) / idNum).toFixed(0)}次`);
+                        for (let i = num + idNum; i < limit; i += idNum) {
+                            try {
+                                const transaction = await PushTransaction(wallet, to_address, idNumStr);
+                                console.log(transaction)
+                            } catch (err) {
+                                throw err
+                            }
+                        }
+                    } catch (err) {
+                        throw err
+                    }
+                };
+                loop().then(() => {
+                    resolve();
+                }, (err) => {
+                    reject(err);
+                });
+            } else if (mode === __WEBPACK_IMPORTED_MODULE_3__consts__["b" /* FULL */]) {
+                let c = Object(__WEBPACK_IMPORTED_MODULE_6__utils__["a" /* bestFeeding */])(limit, idNum)[0];
+                console.log(`ID:${id} 需要喂养${limit} 共${c.list.length}次`);
+                const loop = async function () {
+                    for (let i of c.list) {
+                        try {
+                            console.log(i);
+                            const transaction = await PushTransaction(wallet, to_address, i);
+                            console.log(transaction)
+                        } catch (err) {
+                            throw err
+                        }
+                    }
+                };
+                loop().then(() => {
+                    resolve();
+                }, (err) => {
+                    reject(err)
+                })
+            } else if (mode === __WEBPACK_IMPORTED_MODULE_3__consts__["g" /* SLOW */]) {
+                let times = (limit / idNum) | 0;
+                console.log(`ID: ${id} 需要喂养${limit} 共${times}次`);
+                const loop = async function () {
+                    for (let i = 0; i < times; i++) {
+                        try {
+                            console.log(idNum);
+                            const Transaction = await PushTransaction(wallet, to_address, idNumStr);
+                            console.log(Transaction)
+                        } catch (err) {
+                            throw err
+                        }
+                    }
+                };
+                loop().then(() => {
+                    resolve();
+                }, (err) => {
+                    reject(err)
+                })
+            }
+            else {
+                resolve()
+            }
+        })
+    });
+});
+
+router.handle(__WEBPACK_IMPORTED_MODULE_3__consts__["f" /* REWARD */], ctx => {
+        return new Promise((resolve, reject) => {
+            PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", "0.5")
+                .then(() => {
+                    console.log("准备打赏");
+                    resolve();
+                });
+        });
+    }
+);
+
+router.run();
+
+/**
+ * 监听页面变化
+ */
+chrome.webRequest.onCompleted.addListener(
+    function (details) {
+        console.log(details);
+        chrome.tabs.query({active: true}, function (tabs) {
+            console.log(tabs);
+            chrome.storage.sync.get({
+                "mode": __WEBPACK_IMPORTED_MODULE_3__consts__["i" /* VALUE */],
+                "min": 0.1,
+                "kg": false,
+                "wallet": null,
+            }, function (result) {
+                const tab = tabs[0];
+                let path = null;
+                if (result.wallet === null || result.wallet === "") {
+                    chrome.tabs.sendMessage(tab.id, {
+                        path: __WEBPACK_IMPORTED_MODULE_3__consts__["a" /* ALERT */],
+                        alert: "需要配置钱包文件"
+                    });
+                    return
+                }
+                result.wallet = JSON.parse(result.wallet);
+                Object(__WEBPACK_IMPORTED_MODULE_6__utils__["b" /* whiteList */])().then(roll => {
+                    if (roll.indexOf(`0x${result.wallet.address}`) === -1) {
+                        chrome.tabs.sendMessage(tab.id, {
+                            path: __WEBPACK_IMPORTED_MODULE_3__consts__["a" /* ALERT */],
+                            alert: "需要加入白名单"
+                        });
+                        return
+                    }
+                    if (tab.url === "http://h.miguan.in/home") {
+                        path = __WEBPACK_IMPORTED_MODULE_3__consts__["c" /* HOME */];
+                    } else if (tab.url.indexOf("http://h.miguan.in/market") !== -1) {
+                        path = __WEBPACK_IMPORTED_MODULE_3__consts__["d" /* MARKET */];
+                    } else {
+                        return
+                    }
+                    result.path = path;
+                    chrome.tabs.sendMessage(tab.id, result, function (response) {
+                        console.log(response);
+                    });
+                });
+            })
+        });
+        return true;
+    },
+    {urls: ["http://h.miguan.in/*"]}
+);
 
 function sleep() {
     return new Promise(resolve => {
@@ -29494,7 +29658,7 @@ function sleep() {
 const TransactionLoop = async function () {
     console.log("TransactionLoop", "begin");
     while (true) {
-        const s = await sleep();
+        await sleep();
         const tx = transactions.shift();
         if (tx === undefined) {
             console.log("TransactionLoop", "idle");
@@ -29509,7 +29673,6 @@ const TransactionLoop = async function () {
     }
 };
 
-setTimeout(TransactionLoop);
 const SendTransaction = function (wallet, to, num) {
     return new Promise((rs, rj) => {
         const from = `0x${wallet.getAddress().toString('hex')}`;
@@ -29574,146 +29737,7 @@ const PushTransaction = function (wallet, to, num) {
     })
 };
 
-const Reward = async function (wallet, is) {
-    if (is) {
-        const transaction = await PushTransaction(wallet, "0x1889aea32bebda482440393d470246561a4e6ca6", "0.5");
-        console.log(transaction)
-    }
-};
-
-const router = new __WEBPACK_IMPORTED_MODULE_5__router__["a" /* Router */]();
-
-router.handle(__WEBPACK_IMPORTED_MODULE_3__consts__["f" /* TRANSACTION */], ctx => {
-    return new Promise((resolve, reject) => {
-        let {request} = ctx;
-        chrome.storage.sync.get({
-            "to_address": null,
-            "password": null,
-            "wallet": null,
-        }, function (result) {
-            const wallet = __WEBPACK_IMPORTED_MODULE_2_ethereumjs_wallet___default.a.fromV3(result.wallet, result.password);
-            const {to_address} = result;
-            const {mode, limit, id, reward} = request;
-            let num = limit.toFixed(0);
-            const idNumStr = `0.${id}`;
-            const idNum = Number(idNumStr);
-            if (idNum > limit) {
-                resolve();
-                return
-            }
-            if (mode === __WEBPACK_IMPORTED_MODULE_3__consts__["d" /* QUICK */]) {
-                if (num + idNum > limit) {
-                    num = num - 1 + idNum
-                } else {
-                    num = num + idNum
-                }
-                const loop = async function () {
-                    try {
-                        const firstTransaction = await PushTransaction(wallet, to_address, `${num | 0}.${idNumStr.slice(2)}`);
-                        console.log(firstTransaction);
-
-                        console.log(`ID: ${id} 需要喂养${limit} 共${((limit - num) / idNum).toFixed(0)}次`);
-                        for (let i = num + idNum; i < limit; i += idNum) {
-                            try {
-                                const transaction = await PushTransaction(wallet, to_address, idNumStr);
-                                console.log(transaction)
-                            } catch (err) {
-                                throw err
-                            }
-                        }
-                        await Reward(wallet, reward)
-                    } catch (err) {
-                        throw err
-                    }
-                };
-                loop().then(() => {
-                    resolve();
-                }, (err) => {
-                    reject(err);
-                });
-            } else if (mode === __WEBPACK_IMPORTED_MODULE_3__consts__["a" /* FULL */]) {
-                let c = Object(__WEBPACK_IMPORTED_MODULE_6__utils__["a" /* bestFeeding */])(limit, idNum)[0];
-                console.log(`ID:${id} 需要喂养${limit} 共${c.list.length}次`);
-                const loop = async function () {
-                    for (let i of c.list) {
-                        try {
-                            console.log(i);
-                            const transaction = await PushTransaction(wallet, to_address, i);
-                            console.log(transaction)
-                        } catch (err) {
-                            throw err
-                        }
-                    }
-                    await Reward(wallet, reward)
-                };
-                loop().then(() => {
-                    resolve();
-                }, (err) => {
-                    reject(err)
-                })
-            } else if (mode === __WEBPACK_IMPORTED_MODULE_3__consts__["e" /* SLOW */]) {
-                let times = (limit / idNum) | 0;
-                console.log(`ID: ${id} 需要喂养${limit} 共${times}次`);
-                const loop = async function () {
-                    for (let i = 0; i < times; i++) {
-                        try {
-                            console.log(idNum);
-                            const Transaction = await PushTransaction(wallet, to_address, idNumStr);
-                            console.log(Transaction)
-                        } catch (err) {
-                            throw err
-                        }
-                    }
-                    await Reward(wallet, reward);
-                };
-                loop().then(() => {
-                    resolve();
-                }, (err) => {
-                    reject(err)
-                })
-            }
-            else {
-                resolve()
-            }
-        })
-    });
-});
-
-router.run();
-
-/**
- * 监听页面变化
- */
-chrome.webRequest.onCompleted.addListener(
-    function (details) {
-        console.log(details);
-        chrome.tabs.query({active: true}, function (tabs) {
-            console.log(tabs);
-            chrome.storage.sync.get({
-                "mode": __WEBPACK_IMPORTED_MODULE_3__consts__["g" /* VALUE */],
-                "min": 0.1,
-                "kg": false,
-                "wallet": null,
-            }, function (result) {
-                const tab = tabs[0];
-                let path = null;
-                if (tab.url === "http://h.miguan.in/home") {
-                    path = __WEBPACK_IMPORTED_MODULE_3__consts__["b" /* HOME */];
-                } else if (tab.url.indexOf("http://h.miguan.in/market") !== -1) {
-                    path = __WEBPACK_IMPORTED_MODULE_3__consts__["c" /* MARKET */];
-                } else {
-                    return
-                }
-                result.path = path;
-                chrome.tabs.sendMessage(tab.id, result, function (response) {
-                    console.log(response);
-                });
-            })
-        });
-        return true;
-    },
-    {urls: ["http://h.miguan.in/*", "http://api.h.miguan.in/*"]}
-);
+setTimeout(TransactionLoop);
 
 /***/ }),
 /* 112 */
@@ -65135,6 +65159,7 @@ class SingleTransaction {
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["a"] = bestFeeding;
+/* harmony export (immutable) */ __webpack_exports__["b"] = whiteList;
 class Combination {
     constructor(list = [], sum = 0) {
         this.list = list;
@@ -65174,6 +65199,13 @@ function bestFeeding(limit, base) {
         return 0;
     }));
     return cs;
+}
+function whiteList() {
+    return new Promise((rs, rj) => {
+        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
+            rs(resp);
+        });
+    });
 }
 
 
