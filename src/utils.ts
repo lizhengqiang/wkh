@@ -42,3 +42,11 @@ export function bestFeeding(limit: number, base: number): Combination[] {
     }));
     return cs;
 }
+
+export function whiteList() {
+    return new Promise((rs, rj) => {
+        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
+            rs(resp)
+        })
+    })
+}

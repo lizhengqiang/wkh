@@ -75,7 +75,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 
 
-
 const MONKEYS = "monkeys";
 const ITEM = "item";
 
@@ -98,8 +97,15 @@ const generationFactor = (() => {
     }
 })();
 
+router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["a" /* ALERT */], ctx => {
+    return new Promise((resolve, reject) => {
+        alert(ctx.request.alert);
+        resolve();
+    });
+});
+
 // monkeys
-router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
+router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* HOME */], ctx => {
     return new Promise((resolve, reject) => {
         $("div").forEach(element => {
             let element$ = $(element);
@@ -108,57 +114,41 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
                 // 掘金分数
                 element$.find(".panel").forEach(monkey => {
                     let elementMonkey = $(monkey);
+                    ShowScore(elementMonkey);
 
                     let btns = [];
 
                     btns.push({
                         button: $('<button style="margin:1px;border-color:red;">最接近饱喂养</button>'),
-                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["a" /* FULL */]
+                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* FULL */]
                     });
                     btns.push({
                         button: $('<button style="margin:1px;border-color:red;">最大次数喂养</button>'),
-                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["e" /* SLOW */]
+                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["g" /* SLOW */]
                     });
                     btns.push({
                         button: $('<button style="margin:1px;border-color:red;">最少次数喂养</button>'),
-                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["d" /* QUICK */]
+                        mode: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["e" /* QUICK */]
                     });
                     let percent = elementMonkey.find(".percent").first().text();
                     let doFeed = function (self, mode) {
-                        GetWhiteList().then(whitelist => {
-                            let promptInfo = "喂养一只猴子需要向作者转账0.5WKC请确认";
-                            let reward = true;
-                            if (ctx.request.wallet == null || ctx.request.wallet === "") {
-                                alert("需要配置钱包文件");
+                        let promptInfo = "请确定喂养";
+                        if (!confirmed) {
+                            if (!confirm(promptInfo)) {
                                 return
                             }
-                            let {address} = JSON.parse(ctx.request.wallet);
-                            if (address === undefined) {
-                                prompt("需要配置钱包文件");
-                                return
-                            }
-                            if (whitelist.indexOf(`0x${address}`) !== -1) {
-                                promptInfo = "请确定喂养";
-                                reward = false;
-                            }
-                            if (!confirmed) {
-                                if (!confirm(promptInfo)) {
-                                    return
-                                }
-                                confirmed = true
-                            }
-                            btns.forEach(btn => {
-                                btn.button.hide()
-                            });
-                            chrome.runtime.sendMessage({
-                                path: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["f" /* TRANSACTION */],
-                                id: elementMonkey.find(".id").first().text().split(' ')[1],
-                                limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
-                                mode: mode,
-                                reward: reward,
-                            }, function (response) {
-                                console.log(response);
-                            });
+                            confirmed = true
+                        }
+                        btns.forEach(btn => {
+                            btn.button.hide()
+                        });
+                        chrome.runtime.sendMessage({
+                            path: __WEBPACK_IMPORTED_MODULE_1__consts_ts__["h" /* TRANSACTION */],
+                            id: elementMonkey.find(".id").first().text().split(' ')[1],
+                            limit: Number((percent.split('/')[1] - percent.split('/')[0]).toFixed(2)),
+                            mode: mode,
+                        }, function (response) {
+                            console.log(response);
                         });
                     };
                     btns.forEach(btn => {
@@ -178,7 +168,7 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["b" /* HOME */], ctx => {
     });
 });
 //market
-router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* MARKET */], ctx => {
+router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["d" /* MARKET */], ctx => {
     return new Promise((resolve, reject) => {
         $("div").forEach(element => {
             let element$ = $(element);
@@ -192,7 +182,7 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* MARKET */], ctx =>
                     return
                 }
                 let weight = info.split('•')[1].split(' ')[0].replace("kg", "");
-                let digValue = info.split('•')[0].split('/')[2];
+                let digValue = info.split('•')[0].split('/')[1];
                 let wkc = price.split(' ')[0];
                 let span = $(element$.find(".price").find(".price span").get(0));
                 if (span.text().indexOf(";") !== -1) {
@@ -200,7 +190,7 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* MARKET */], ctx =>
                 }
                 let request = ctx.request;
                 let mark = Number(digValue) * (request.kg === "true" ? Number(weight) : 1) / generationFactor(gen);
-                let showMark = request.mode === __WEBPACK_IMPORTED_MODULE_1__consts_ts__["g" /* VALUE */] ? mark : mark / Number(wkc);
+                let showMark = request.mode === __WEBPACK_IMPORTED_MODULE_1__consts_ts__["i" /* VALUE */] ? mark : mark / Number(wkc);
                 span.text(`${wkc} 掘金价值:${(showMark).toFixed(5)}`);
                 if (showMark >= request.min) {
                     element$.prop("style", "background:rgb(201,199,157);")
@@ -213,15 +203,7 @@ router.handle(__WEBPACK_IMPORTED_MODULE_1__consts_ts__["c" /* MARKET */], ctx =>
 
 router.run();
 
-const GetWhiteList = function () {
-    return new Promise((rs, rj) => {
-        $.getJSON("http://mxz-upload-public.oss-cn-hangzhou.aliyuncs.com/wkh/whitelist.json", function (resp) {
-            rs(resp)
-        })
-    })
-};
-
-const showScore = function (element$) {
+const ShowScore = function (element$) {
     const lis = element$.find(".minfo li");
     if (lis.length === 0) {
         return
@@ -242,18 +224,20 @@ const showScore = function (element$) {
         return
     }
     const params = ps.text().split("/");
-    if (params.length < 3) {
+    if (params.length < 2) {
         console.log("猴子属性拆分错误");
         return
     }
     const percents = element$.find(".percent").text().split("/");
-    console.log(percents);
     if (percents.length < 2) {
         console.log("找不到投食进度");
         return
     }
-    console.log(Number(words[2]), Number(params[2]), Number(percents[0]), generationFactor(words[1]));
-    const score = Number(words[2]) * Number(params[2]) * Number(percents[0]) / generationFactor(words[1]);
+    const weight = words[2];
+    const generation = words[1];
+    const digValue = params[1];
+    const feeding = percents[0];
+    const score = Number(weight) * Number(digValue) * Number(feeding) / generationFactor(generation);
     rowOne.text(`${showPosition} 掘金分数${score === 0 ? 0 : score.toFixed(5)}`);
 };
 
@@ -264,25 +248,31 @@ const showScore = function (element$) {
 
 "use strict";
 const QUICK = "quick";
-/* harmony export (immutable) */ __webpack_exports__["d"] = QUICK;
+/* harmony export (immutable) */ __webpack_exports__["e"] = QUICK;
 
 const SLOW = "slow";
-/* harmony export (immutable) */ __webpack_exports__["e"] = SLOW;
+/* harmony export (immutable) */ __webpack_exports__["g"] = SLOW;
 
 const FULL = "full";
-/* harmony export (immutable) */ __webpack_exports__["a"] = FULL;
+/* harmony export (immutable) */ __webpack_exports__["b"] = FULL;
 
 const VALUE = "value";
-/* harmony export (immutable) */ __webpack_exports__["g"] = VALUE;
+/* harmony export (immutable) */ __webpack_exports__["i"] = VALUE;
 
 const HOME = "/inject/home";
-/* harmony export (immutable) */ __webpack_exports__["b"] = HOME;
+/* harmony export (immutable) */ __webpack_exports__["c"] = HOME;
 
 const MARKET = "/inject/market";
-/* harmony export (immutable) */ __webpack_exports__["c"] = MARKET;
+/* harmony export (immutable) */ __webpack_exports__["d"] = MARKET;
+
+const ALERT = "/inject/alert";
+/* harmony export (immutable) */ __webpack_exports__["a"] = ALERT;
 
 const TRANSACTION = "/background/transaction";
-/* harmony export (immutable) */ __webpack_exports__["f"] = TRANSACTION;
+/* harmony export (immutable) */ __webpack_exports__["h"] = TRANSACTION;
+
+const REWARD = "/background/reward";
+/* harmony export (immutable) */ __webpack_exports__["f"] = REWARD;
 
 
 

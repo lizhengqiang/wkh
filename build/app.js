@@ -82,7 +82,7 @@ const to_address = 'to_address';
 const password = 'password';
 
 chrome.storage.sync.get({
-    [mode]: __WEBPACK_IMPORTED_MODULE_0__consts__["g" /* VALUE */],
+    [mode]: __WEBPACK_IMPORTED_MODULE_0__consts__["i" /* VALUE */],
     [min]: 0.1,
     [kg]: false,
     [interval]: 5,
@@ -119,7 +119,7 @@ $("#update").click(DoUpdate);
 $("#like").click(function () {
     DoUpdate();
     chrome.runtime.sendMessage({
-        to_address: "0x1889aea32bebda482440393d470246561a4e6ca6"
+        path: __WEBPACK_IMPORTED_MODULE_0__consts__["f" /* REWARD */]
     }, function (response) {
         console.log(response);
     });
@@ -132,25 +132,31 @@ $("#like").click(function () {
 
 "use strict";
 const QUICK = "quick";
-/* harmony export (immutable) */ __webpack_exports__["d"] = QUICK;
+/* harmony export (immutable) */ __webpack_exports__["e"] = QUICK;
 
 const SLOW = "slow";
-/* harmony export (immutable) */ __webpack_exports__["e"] = SLOW;
+/* harmony export (immutable) */ __webpack_exports__["g"] = SLOW;
 
 const FULL = "full";
-/* harmony export (immutable) */ __webpack_exports__["a"] = FULL;
+/* harmony export (immutable) */ __webpack_exports__["b"] = FULL;
 
 const VALUE = "value";
-/* harmony export (immutable) */ __webpack_exports__["g"] = VALUE;
+/* harmony export (immutable) */ __webpack_exports__["i"] = VALUE;
 
 const HOME = "/inject/home";
-/* harmony export (immutable) */ __webpack_exports__["b"] = HOME;
+/* harmony export (immutable) */ __webpack_exports__["c"] = HOME;
 
 const MARKET = "/inject/market";
-/* harmony export (immutable) */ __webpack_exports__["c"] = MARKET;
+/* harmony export (immutable) */ __webpack_exports__["d"] = MARKET;
+
+const ALERT = "/inject/alert";
+/* harmony export (immutable) */ __webpack_exports__["a"] = ALERT;
 
 const TRANSACTION = "/background/transaction";
-/* harmony export (immutable) */ __webpack_exports__["f"] = TRANSACTION;
+/* harmony export (immutable) */ __webpack_exports__["h"] = TRANSACTION;
+
+const REWARD = "/background/reward";
+/* harmony export (immutable) */ __webpack_exports__["f"] = REWARD;
 
 
 
